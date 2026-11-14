@@ -24,4 +24,4 @@ If you plan to contribute to the project, please read the [Contribution Guidelin
 
 ## License
 
-Everything in this project is licensed under the [MIT license](http://opensource.org/licenses/MIT). See [LICENSE](./LICENSE) for the copyright notices, including those of the open source project StayLit is based on.
+StayLit is licensed under the [MIT license](./LICENSE). Parts of it come from other MIT-licensed software. Their copyright notices are in [NOTICE](./NOTICE) and in the headers of the source files.
