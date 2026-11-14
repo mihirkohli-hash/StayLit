@@ -16,11 +16,11 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <view id="nJr-ua-jG7">
-            <rect key="frame" x="0.0" y="0.0" width="450" height="262"/>
+            <rect key="frame" x="0.0" y="0.0" width="450" height="303"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
                 <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="16" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lXE-0q-dlL">
-                    <rect key="frame" x="80" y="73" width="350" height="169"/>
+                    <rect key="frame" x="80" y="73" width="350" height="210"/>
                     <subviews>
                         <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gRt-Cl-6hc">
                             <rect key="frame" x="0.0" y="90" width="285" height="38"/>
@@ -119,6 +119,46 @@
                                 <real value="3.4028234663852886e+38"/>
                             </customSpacing>
                         </stackView>
+                        <stackView distribution="fill" orientation="horizontal" alignment="firstBaseline" spacing="8" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rw2-Pl-s4q">
+                            <rect key="frame" x="0.0" y="42" width="270" height="25"/>
+                            <subviews>
+                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lb2-Pl-7xN">
+                                    <rect key="frame" x="-2" y="5" width="130" height="16"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" title="Pulse Duration" id="Lc2-Pl-3yK">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pp2-Pl-9mR">
+                                    <rect key="frame" x="132" y="0.0" width="141" height="25"/>
+                                    <popUpButtonCell key="cell" type="push" title="1 second" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" tag="1000" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Ib2-Pl-2bD" id="Pc2-Pl-5wT">
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="menu"/>
+                                        <menu key="menu" id="Mn2-Pl-6vB">
+                                            <items>
+                                                <menuItem title="0.5 seconds" tag="500" id="Ia2-Pl-1aC"/>
+                                                <menuItem title="1 second" tag="1000" state="on" id="Ib2-Pl-2bD"/>
+                                                <menuItem title="2 seconds" tag="2000" id="Ic2-Pl-3cE"/>
+                                                <menuItem title="3 seconds" tag="3000" id="Id2-Pl-4dF"/>
+                                                <menuItem title="5 seconds" tag="5000" id="Ie2-Pl-5eG"/>
+                                            </items>
+                                        </menu>
+                                    </popUpButtonCell>
+                                    <connections>
+                                        <binding destination="CIJ-dN-fzc" name="selectedTag" keyPath="values.io.github.mihirkohli-hash.StayLit.MenuBarIconPulseDurationMilliseconds" id="Bd2-Pl-8hH"/>
+                                    </connections>
+                                </popUpButton>
+                            </subviews>
+                            <visibilityPriorities>
+                                <integer value="1000"/>
+                                <integer value="1000"/>
+                            </visibilityPriorities>
+                            <customSpacing>
+                                <real value="3.4028234663852886e+38"/>
+                                <real value="3.4028234663852886e+38"/>
+                            </customSpacing>
+                        </stackView>
                         <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OlQ-t6-SFN">
                             <rect key="frame" x="-7" y="-7" width="168" height="32"/>
                             <buttonCell key="cell" type="push" title="Notification Settings…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7dk-Tj-9aG">
@@ -138,8 +178,10 @@
                         <integer value="1000"/>
                         <integer value="1000"/>
                         <integer value="1000"/>
+                        <integer value="1000"/>
                     </visibilityPriorities>
                     <customSpacing>
+                        <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>

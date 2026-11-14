@@ -39,6 +39,11 @@
     [super setUp];
     
     self.defaults = [[NSUserDefaults alloc] initWithSuiteName:NSStringFromClass([self class])];
+
+    // The suite lives on disk, and the test plan runs tests in random order. A value stored by
+    // another test or an earlier run must not decide what a "default" test sees.
+    [self.defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
+    [self.defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
 }
 
 SLT_GENERATE_BOOL_TEST(isActivatedOnLaunch,

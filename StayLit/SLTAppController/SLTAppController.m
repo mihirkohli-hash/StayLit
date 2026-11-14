@@ -43,7 +43,8 @@
         // The Settings drop-down binds to this key. Without a registered value it would
         // show no selection until the user picks one.
         [NSUserDefaults.standardUserDefaults registerDefaults:@{
-            SLTUserDefaultsKeyMenuBarIconColor: @(SLTMenuBarIconColorWhite)
+            SLTUserDefaultsKeyMenuBarIconColor: @(SLTMenuBarIconColorWhite),
+            SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds: @((NSInteger)(SLTDefaultMenuBarIconPulseDuration * 1000))
         }];
 
         [self configureStatusItemController];

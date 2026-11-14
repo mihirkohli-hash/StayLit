@@ -247,6 +247,66 @@
         }
       }
     },
+    "Ia2-Pl-1aC.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"0.5 seconds\"; ObjectID = \"Ia2-Pl-1aC\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "0.5 seconds"
+          }
+        }
+      }
+    },
+    "Ib2-Pl-2bD.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"1 second\"; ObjectID = \"Ib2-Pl-2bD\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "1 second"
+          }
+        }
+      }
+    },
+    "Ic2-Pl-3cE.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"2 seconds\"; ObjectID = \"Ic2-Pl-3cE\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "2 seconds"
+          }
+        }
+      }
+    },
+    "Id2-Pl-4dF.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"3 seconds\"; ObjectID = \"Id2-Pl-4dF\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "3 seconds"
+          }
+        }
+      }
+    },
+    "Ie2-Pl-5eG.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"5 seconds\"; ObjectID = \"Ie2-Pl-5eG\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "5 seconds"
+          }
+        }
+      }
+    },
     "IGL-ft-k8h.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Quit\"; ObjectID = \"IGL-ft-k8h\";",
       "extractionState" : "extracted_with_value",
@@ -555,6 +615,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "登入系統時自動開啟此程式。"
+          }
+        }
+      }
+    },
+    "Lb2-Pl-7xN.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Pulse Duration\"; ObjectID = \"Lb2-Pl-7xN\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pulse Duration"
           }
         }
       }
