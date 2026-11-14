@@ -11,6 +11,7 @@
 
 @interface SLTStatusItemController ()
 @property (nonatomic, readwrite) NSStatusItem *systemStatusItem;
+@property (nonatomic) SLTStatusItemAppearance currentAppearance;
 @end
 
 @implementation SLTStatusItemController
@@ -21,8 +22,26 @@
     if(self)
     {
         [self configureStatusItem];
+
+        // The icon color is a user default, so a change in Settings reaches the icon here.
+        [NSNotificationCenter.defaultCenter addObserver:self
+                                               selector:@selector(userDefaultsDidChange:)
+                                                   name:NSUserDefaultsDidChangeNotification
+                                                 object:nil];
     }
     return self;
+}
+
+- (void)dealloc
+{
+    [NSNotificationCenter.defaultCenter removeObserver:self name:NSUserDefaultsDidChangeNotification object:nil];
+}
+
+- (void)userDefaultsDidChange:(NSNotification *)notification
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateButtonImage];
+    });
 }
 
 #pragma mark - Configuration
@@ -79,29 +98,40 @@
 
 - (SLTStatusItemAppearance)appearance
 {
-    Auto menubarIcon = SLTStatusItemImageProvider.currentProvider;
-    return self.systemStatusItem.image == menubarIcon.activeIconImage;
+    return self.currentAppearance;
 }
 
 - (void)setAppearance:(SLTStatusItemAppearance)appearance
 {
     [self willChangeValueForKey:@"appearance"];
-    
+
+    self.currentAppearance = appearance;
+    [self updateButtonImage];
+
     Auto button = self.systemStatusItem.button;
-    Auto imageProvider = SLTStatusItemImageProvider.currentProvider;
-    
     if(appearance == SLTStatusItemAppearanceActive)
     {
-        button.image = imageProvider.activeIconImage;
         button.toolTip = SLT_L10N_CLICK_TO_ALLOW_SLEEP;
     }
     else
     {
-        button.image = imageProvider.inactiveIconImage;
         button.toolTip = SLT_L10N_CLICK_TO_PREVENT_SLEEP;
     }
-    
+
     [self didChangeValueForKey:@"appearance"];
+}
+
+- (void)updateButtonImage
+{
+    Auto button = self.systemStatusItem.button;
+    Auto imageProvider = SLTStatusItemImageProvider.currentProvider;
+    Auto image = (self.currentAppearance == SLTStatusItemAppearanceActive) ? imageProvider.activeIconImage : imageProvider.inactiveIconImage;
+
+    // The provider returns the same instance until the color changes, so most calls do nothing.
+    if(button.image != image)
+    {
+        button.image = image;
+    }
 }
 
 #pragma mark - Menu

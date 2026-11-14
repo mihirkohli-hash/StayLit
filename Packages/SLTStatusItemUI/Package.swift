@@ -20,5 +20,6 @@ let package = Package(
                 "SLTApplicationSupport"
             ]
         ),
+        .testTarget(name: "SLTStatusItemUITests", dependencies: ["SLTStatusItemUI"]),
     ]
 )

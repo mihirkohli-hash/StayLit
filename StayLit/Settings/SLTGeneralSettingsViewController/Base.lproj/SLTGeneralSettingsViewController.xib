@@ -16,11 +16,11 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <view id="nJr-ua-jG7">
-            <rect key="frame" x="0.0" y="0.0" width="450" height="221"/>
+            <rect key="frame" x="0.0" y="0.0" width="450" height="262"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
                 <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="16" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lXE-0q-dlL">
-                    <rect key="frame" x="80" y="73" width="350" height="128"/>
+                    <rect key="frame" x="80" y="73" width="350" height="169"/>
                     <subviews>
                         <stackView distribution="fill" orientation="vertical" alignment="leading" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gRt-Cl-6hc">
                             <rect key="frame" x="0.0" y="90" width="285" height="38"/>
@@ -81,6 +81,44 @@
                                 <real value="3.4028234663852886e+38"/>
                             </customSpacing>
                         </stackView>
+                        <stackView distribution="fill" orientation="horizontal" alignment="firstBaseline" spacing="8" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cl7-Rw-s9a">
+                            <rect key="frame" x="0.0" y="42" width="270" height="25"/>
+                            <subviews>
+                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lbl-Mn-1xQ">
+                                    <rect key="frame" x="-2" y="5" width="130" height="16"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" title="Menu Bar Icon Color" id="LcE-ll-7Ty">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pop-Up-3kM">
+                                    <rect key="frame" x="132" y="0.0" width="141" height="25"/>
+                                    <popUpButtonCell key="cell" type="push" title="White" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="It1-Wh-2aB" id="PcE-ll-4Vb">
+                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="menu"/>
+                                        <menu key="menu" id="Mnu-Cl-8Zd">
+                                            <items>
+                                                <menuItem title="White" state="on" id="It1-Wh-2aB"/>
+                                                <menuItem title="Dark" id="It2-Dk-5cD"/>
+                                                <menuItem title="Follow System" id="It3-Sy-6eF"/>
+                                            </items>
+                                        </menu>
+                                    </popUpButtonCell>
+                                    <connections>
+                                        <binding destination="CIJ-dN-fzc" name="selectedIndex" keyPath="values.io.github.mihirkohli-hash.StayLit.MenuBarIconColor" id="Bnd-Sl-9gH"/>
+                                    </connections>
+                                </popUpButton>
+                            </subviews>
+                            <visibilityPriorities>
+                                <integer value="1000"/>
+                                <integer value="1000"/>
+                            </visibilityPriorities>
+                            <customSpacing>
+                                <real value="3.4028234663852886e+38"/>
+                                <real value="3.4028234663852886e+38"/>
+                            </customSpacing>
+                        </stackView>
                         <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OlQ-t6-SFN">
                             <rect key="frame" x="-7" y="-7" width="168" height="32"/>
                             <buttonCell key="cell" type="push" title="Notification Settings…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7dk-Tj-9aG">
@@ -99,8 +137,10 @@
                         <integer value="1000"/>
                         <integer value="1000"/>
                         <integer value="1000"/>
+                        <integer value="1000"/>
                     </visibilityPriorities>
                     <customSpacing>
+                        <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>
                         <real value="3.4028234663852886e+38"/>

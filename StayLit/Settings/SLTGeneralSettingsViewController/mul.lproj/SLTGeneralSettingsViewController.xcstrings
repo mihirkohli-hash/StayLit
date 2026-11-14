@@ -385,6 +385,42 @@
         }
       }
     },
+    "It1-Wh-2aB.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"White\"; ObjectID = \"It1-Wh-2aB\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "White"
+          }
+        }
+      }
+    },
+    "It2-Dk-5cD.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Dark\"; ObjectID = \"It2-Dk-5cD\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dark"
+          }
+        }
+      }
+    },
+    "It3-Sy-6eF.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Follow System\"; ObjectID = \"It3-Sy-6eF\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Follow System"
+          }
+        }
+      }
+    },
     "jxf-J8-dHN.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Automatically opens the app when you start your Mac.\"; ObjectID = \"jxf-J8-dHN\";",
       "extractionState" : "extracted_with_value",
@@ -519,6 +555,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "登入系統時自動開啟此程式。"
+          }
+        }
+      }
+    },
+    "Lbl-Mn-1xQ.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Menu Bar Icon Color\"; ObjectID = \"Lbl-Mn-1xQ\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Menu Bar Icon Color"
           }
         }
       }

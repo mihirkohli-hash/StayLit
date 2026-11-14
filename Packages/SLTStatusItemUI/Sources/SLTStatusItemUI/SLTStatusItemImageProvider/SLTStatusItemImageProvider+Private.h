@@ -10,8 +10,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SLTStatusItemImageProvider ()
-@property (nonatomic, readwrite) NSImage *activeIconImage;
-@property (nonatomic, readwrite) NSImage *inactiveIconImage;
+@property (nonatomic) NSImage *baseActiveIconImage;
+@property (nonatomic) NSImage *baseInactiveIconImage;
+
+// Colored variants by color, so the same image instance is returned until the color changes.
+@property (nonatomic) NSMutableDictionary<NSNumber *, NSImage *> *activeIconCache;
+@property (nonatomic) NSMutableDictionary<NSNumber *, NSImage *> *inactiveIconCache;
 
 /// The designated initializer for an image provider.
 /// @param activeIcon An NSImage representing the active state, a nil value sets the default icon.

@@ -65,10 +65,38 @@
     self = [super init];
     if(self)
     {
-        self.activeIconImage = activeIcon;
-        self.inactiveIconImage = inactiveIcon;
+        self.baseActiveIconImage = activeIcon;
+        self.baseInactiveIconImage = inactiveIcon;
+        self.activeIconCache = [NSMutableDictionary new];
+        self.inactiveIconCache = [NSMutableDictionary new];
     }
     return self;
+}
+
+#pragma mark - Icon Images
+
+- (NSImage *)activeIconImage
+{
+    return [self coloredImageForBaseImage:self.baseActiveIconImage cache:self.activeIconCache];
+}
+
+- (NSImage *)inactiveIconImage
+{
+    return [self coloredImageForBaseImage:self.baseInactiveIconImage cache:self.inactiveIconCache];
+}
+
+- (NSImage *)coloredImageForBaseImage:(NSImage *)baseImage cache:(NSMutableDictionary<NSNumber *, NSImage *> *)cache
+{
+    Auto color = NSUserDefaults.standardUserDefaults.slt_menuBarIconColor;
+    Auto cachedImage = cache[@(color)];
+    if(cachedImage != nil)
+    {
+        return cachedImage;
+    }
+
+    Auto image = [NSImage slt_menuBarIconImageFromTemplateImage:baseImage color:color];
+    cache[@(color)] = image;
+    return image;
 }
 
 @end

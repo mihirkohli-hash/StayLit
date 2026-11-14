@@ -16,11 +16,25 @@ SLT_EXPORT NSString * const SLTUserDefaultsKeyKeepAwakeOnLidCloseEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyActivateOnExternalDisplayConnectedEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyDeactivateOnUserSwitchEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconHighlightDisabled;
+SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconColor;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyIsQuitOnTimerExpirationEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyBatteryCapacityThresholdEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyBatteryCapacityThreshold;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyLowPowerModeMonitoringEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyPreReleaseUpdatesEnabled;
+
+/// The color of the menu bar icon.
+///
+/// The raw values are stored in the user defaults, so do not reorder them.
+/// White is 0, so it is the default when nothing is stored.
+typedef NS_ENUM(NSInteger, SLTMenuBarIconColor) {
+    /// A white icon.
+    SLTMenuBarIconColorWhite = 0,
+    /// A black icon.
+    SLTMenuBarIconColorDark = 1,
+    /// A template icon that macOS draws white or black to match the menu bar.
+    SLTMenuBarIconColorFollowSystem = 2,
+};
 
 @interface NSUserDefaults (SLTKeys)
 
@@ -34,6 +48,9 @@ SLT_EXPORT NSString * const SLTUserDefaultsKeyPreReleaseUpdatesEnabled;
 /// Returns YES if the system should stay awake when the MacBook lid is closed.
 /// This exposes the `caffeinate -s` command, which only has an effect on AC power.
 @property (nonatomic, getter = slt_isKeepAwakeOnLidCloseEnabled) BOOL slt_keepAwakeOnLidCloseEnabled;
+
+/// The color of the menu bar icon. A missing or unknown stored value returns white.
+@property (nonatomic) SLTMenuBarIconColor slt_menuBarIconColor;
 
 /// Returns YES if the menu bar icon should not be highlighted on left and right click.
 @property (nonatomic, getter = slt_isMenuBarIconHighlightDisabled) BOOL slt_menuBarIconHighlightDisabled;

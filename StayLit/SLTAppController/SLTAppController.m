@@ -40,6 +40,12 @@
     self = [super init];
     if(self)
     {
+        // The Settings drop-down binds to this key. Without a registered value it would
+        // show no selection until the user picks one.
+        [NSUserDefaults.standardUserDefaults registerDefaults:@{
+            SLTUserDefaultsKeyMenuBarIconColor: @(SLTMenuBarIconColorWhite)
+        }];
+
         [self configureStatusItemController];
         [self configureSleepWakeTimer];
         [self configureEventHandler];

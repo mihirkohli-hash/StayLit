@@ -81,6 +81,46 @@ SLT_GENERATE_BOOL_TEST(isLowPowerModeMonitoringEnabled,
                        lowPowerModeMonitoringEnabled,
                        SLTUserDefaultsKeyLowPowerModeMonitoringEnabled);
 
+- (void)testMenuBarIconColorDefaultsToWhite
+{
+    XCTAssertEqual(self.defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite);
+}
+
+- (void)testMenuBarIconColorRoundTrip
+{
+    Auto defaults = self.defaults;
+    Auto key = SLTUserDefaultsKeyMenuBarIconColor;
+
+    defaults.slt_menuBarIconColor = SLTMenuBarIconColorDark;
+    XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorDark);
+    XCTAssertEqual([defaults integerForKey:key], 1);
+
+    defaults.slt_menuBarIconColor = SLTMenuBarIconColorFollowSystem;
+    XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorFollowSystem);
+    XCTAssertEqual([defaults integerForKey:key], 2);
+
+    defaults.slt_menuBarIconColor = SLTMenuBarIconColorWhite;
+    XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite);
+    XCTAssertEqual([defaults integerForKey:key], 0);
+}
+
+- (void)testMenuBarIconColorFallsBackToWhiteForUnknownValues
+{
+    Auto defaults = self.defaults;
+    Auto key = SLTUserDefaultsKeyMenuBarIconColor;
+
+    for(NSNumber *value in @[@(-1), @3, @99, @(NSIntegerMax)])
+    {
+        [defaults setInteger:value.integerValue forKey:key];
+        XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite, @"%@ should fall back to white", value);
+    }
+
+    [defaults setObject:@"dark" forKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite, @"A string is not a valid value");
+    [defaults removeObjectForKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite);
+}
+
 - (void)testBatteryCapacityThreshold
 {
     Auto defaults = self.defaults;

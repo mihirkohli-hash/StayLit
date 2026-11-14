@@ -40,6 +40,30 @@ const NSImageName SLTStatusItemInactiveImageName = @"InactiveIcon";
     return image;
 }
 
+#pragma mark - Icon Color
+
++ (NSImage *)slt_menuBarIconImageFromTemplateImage:(NSImage *)templateImage color:(SLTMenuBarIconColor)color
+{
+    if(color == SLTMenuBarIconColorFollowSystem)
+    {
+        return templateImage;
+    }
+
+    Auto fillColor = (color == SLTMenuBarIconColorDark) ? NSColor.blackColor : NSColor.whiteColor;
+
+    // The drawing handler runs at the resolution of the screen, so the icon stays sharp
+    // on every display. Source-atop keeps the shape and the translucent parts of the
+    // template image and only replaces its color.
+    Auto image = [NSImage imageWithSize:templateImage.size flipped:NO drawingHandler:^BOOL(NSRect rect) {
+        [templateImage drawInRect:rect];
+        [fillColor set];
+        NSRectFillUsingOperation(rect, NSCompositingOperationSourceAtop);
+        return YES;
+    }];
+    image.template = NO;
+    return image;
+}
+
 #pragma mark - Custom Icon Images
 
 + (NSImage *)slt_customActiveIconImage

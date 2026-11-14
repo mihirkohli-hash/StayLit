@@ -77,6 +77,28 @@ SLT_GENERATE_BOOL_PROPERTY(isLowPowerModeMonitoringEnabled,
                            lowPowerModeMonitoringEnabled,
                            LowPowerModeMonitoringEnabled);
 
+#pragma mark - Menu Bar Icon Color
+
+NSString * const SLTUserDefaultsKeyMenuBarIconColor = @"io.github.mihirkohli-hash.StayLit.MenuBarIconColor";
+
+- (SLTMenuBarIconColor)slt_menuBarIconColor
+{
+    Auto storedValue = [self integerForKey:SLTUserDefaultsKeyMenuBarIconColor];
+    switch(storedValue)
+    {
+        case SLTMenuBarIconColorDark:
+        case SLTMenuBarIconColorFollowSystem:
+            return (SLTMenuBarIconColor)storedValue;
+        default:
+            return SLTMenuBarIconColorWhite;
+    }
+}
+
+- (void)setSlt_menuBarIconColor:(SLTMenuBarIconColor)menuBarIconColor
+{
+    [self setInteger:menuBarIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor];
+}
+
 #pragma mark - Battery Capacity Threshold
 
 NSString * const SLTUserDefaultsKeyBatteryCapacityThreshold = @"io.github.mihirkohli-hash.StayLit.BatteryCapacityThreshold";

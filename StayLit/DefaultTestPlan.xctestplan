@@ -41,6 +41,13 @@
     },
     {
       "target" : {
+        "containerPath" : "container:Packages\/SLTStatusItemUI",
+        "identifier" : "SLTStatusItemUITests",
+        "name" : "SLTStatusItemUITests"
+      }
+    },
+    {
+      "target" : {
         "containerPath" : "container:Packages\/SLTApplicationSupport",
         "identifier" : "SLTApplicationSupportTests",
         "name" : "SLTApplicationSupportTests"
