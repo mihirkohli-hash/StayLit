@@ -44,7 +44,24 @@ const NSImageName SLTStatusItemInactiveImageName = @"InactiveIcon";
 
 const NSUInteger SLTStatusItemPulseFrameCount = 16;
 
+// The system colors are dynamic, so each one adapts to a light or dark menu bar.
+static NSColor *SLTPulseScreenColor(SLTMenuBarIconPulseColor pulseColor, NSColor *bodyColor)
+{
+    switch(pulseColor)
+    {
+        case SLTMenuBarIconPulseColorGreen: return NSColor.systemGreenColor;
+        case SLTMenuBarIconPulseColorBlue: return NSColor.systemBlueColor;
+        case SLTMenuBarIconPulseColorOrange: return NSColor.systemOrangeColor;
+        case SLTMenuBarIconPulseColorRed: return NSColor.systemRedColor;
+        case SLTMenuBarIconPulseColorPurple: return NSColor.systemPurpleColor;
+        case SLTMenuBarIconPulseColorSameAsIcon: return bodyColor;
+        case SLTMenuBarIconPulseColorAccent: break;
+    }
+    return NSColor.controlAccentColor;
+}
+
 + (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color
+                                            pulseColor:(SLTMenuBarIconPulseColor)pulseColor
 {
     Auto symbolSize = [NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil].size;
     Auto frames = [NSMutableArray<NSImage *> arrayWithCapacity:SLTStatusItemPulseFrameCount];
@@ -61,7 +78,7 @@ const NSUInteger SLTStatusItemPulseFrameCount = 16;
             if(color == SLTMenuBarIconColorWhite) { bodyColor = NSColor.whiteColor; }
             if(color == SLTMenuBarIconColorDark) { bodyColor = NSColor.blackColor; }
 
-            Auto screenColor = [NSColor.controlAccentColor colorWithAlphaComponent:screenAlpha];
+            Auto screenColor = [SLTPulseScreenColor(pulseColor, bodyColor) colorWithAlphaComponent:screenAlpha];
             Auto configuration = [NSImageSymbolConfiguration configurationWithPaletteColors:@[bodyColor, screenColor]];
             Auto symbol = [[NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil] imageWithSymbolConfiguration:configuration];
             [symbol drawInRect:rect];

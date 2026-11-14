@@ -94,15 +94,20 @@
         return nil;
     }
 
-    Auto color = NSUserDefaults.standardUserDefaults.slt_menuBarIconColor;
-    Auto cachedFrames = self.pulseFramesCache[@(color)];
+    Auto defaults = NSUserDefaults.standardUserDefaults;
+    Auto color = defaults.slt_menuBarIconColor;
+    Auto pulseColor = defaults.slt_menuBarIconPulseColor;
+
+    // The frames depend on both colors, so the cache key holds both.
+    Auto cacheKey = @(color * 100 + pulseColor);
+    Auto cachedFrames = self.pulseFramesCache[cacheKey];
     if(cachedFrames != nil)
     {
         return cachedFrames;
     }
 
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:color];
-    self.pulseFramesCache[@(color)] = frames;
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:color pulseColor:pulseColor];
+    self.pulseFramesCache[cacheKey] = frames;
     return frames;
 }
 

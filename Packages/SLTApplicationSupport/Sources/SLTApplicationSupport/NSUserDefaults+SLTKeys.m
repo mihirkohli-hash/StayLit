@@ -103,6 +103,25 @@ NSString * const SLTUserDefaultsKeyMenuBarIconColor = @"io.github.mihirkohli-has
     [self setInteger:menuBarIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor];
 }
 
+#pragma mark - Menu Bar Icon Pulse Color
+
+NSString * const SLTUserDefaultsKeyMenuBarIconPulseColor = @"io.github.mihirkohli-hash.StayLit.MenuBarIconPulseColor";
+
+- (SLTMenuBarIconPulseColor)slt_menuBarIconPulseColor
+{
+    Auto storedValue = [self integerForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
+    if(storedValue < SLTMenuBarIconPulseColorAccent || storedValue > SLTMenuBarIconPulseColorSameAsIcon)
+    {
+        return SLTMenuBarIconPulseColorAccent;
+    }
+    return (SLTMenuBarIconPulseColor)storedValue;
+}
+
+- (void)setSlt_menuBarIconPulseColor:(SLTMenuBarIconPulseColor)menuBarIconPulseColor
+{
+    [self setInteger:menuBarIconPulseColor forKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
+}
+
 #pragma mark - Menu Bar Icon Pulse Duration
 
 NSString * const SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds = @"io.github.mihirkohli-hash.StayLit.MenuBarIconPulseDurationMilliseconds";
