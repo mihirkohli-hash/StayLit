@@ -6,6 +6,8 @@ StayLit is a small menu bar utility for macOS 12 and newer. It keeps your Mac fr
 
 There are no prebuilt releases yet. Build the app from source with Xcode.
 
+To build the Direct app and install it on your own Mac, run `make install-local`. It copies `StayLit.app` to `/Applications`, signs it ad hoc for local use and starts it. This build turns off library validation so macOS accepts the embedded Sparkle framework. Do not share a build made this way. A shareable build needs signing with an Apple Developer ID.
+
 ## How does it work?
 
 The app is a small wrapper around Apple's `caffeinate` command line utility. All current versions of macOS ship with this tool by default. You can read the manual page [here](https://web.archive.org/web/20140604153141/https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man8/caffeinate.8.html).

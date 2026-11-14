@@ -15,6 +15,9 @@ BEAUTIFY = | xcbeautify
 DISABLE_PACKAGE_RESOLUTION = -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile
 SAVE_LOG = 2>&1 | tee "$(BUILD_DIR)/$(NAME).log"
 
+LOCAL_INSTALL_DIR = /Applications
+LOCAL_INSTALL_ENTITLEMENTS = StayLit/StayLit-LocalInstall.entitlements
+
 default: clean
 
 clean:
@@ -89,3 +92,26 @@ dist: $(OUTPUT_DIR)/$(NAME)-$(VERSION).zip
 	@echo "Verifying code signing identity..."
 	@spctl -a -vv $(OUTPUT_DIR)/$(NAME).app
 PHONY: dist
+
+# Builds the Direct app and installs it for this Mac only. An ad-hoc signed Release build has no
+# Team ID, and macOS then refuses to load the embedded Sparkle framework, which has its own.
+# The local entitlements turn off library validation to allow that. Never ship a build signed this way.
+install-local:
+	@mkdir -p "$(BUILD_DIR)"
+	$(XCODEBUILD) build \
+	-quiet \
+	-workspace "$(WORKSPACE)" \
+	-scheme "$(DIST_TARGET)" \
+	-configuration Release \
+	-destination 'platform=macOS' \
+	-derivedDataPath "$(BUILD_DIR)" \
+	CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGNING_REQUIRED=YES \
+	$(DISABLE_PACKAGE_RESOLUTION) \
+	$(SAVE_LOG)
+	-pkill -x "$(NAME)"
+	$(RM) -r "$(LOCAL_INSTALL_DIR)/$(NAME).app"
+	ditto "$(BUILD_DIR)/Build/Products/Release/$(NAME).app" "$(LOCAL_INSTALL_DIR)/$(NAME).app"
+	codesign --force --sign - --options runtime --entitlements "$(LOCAL_INSTALL_ENTITLEMENTS)" "$(LOCAL_INSTALL_DIR)/$(NAME).app"
+	codesign --verify --deep --strict "$(LOCAL_INSTALL_DIR)/$(NAME).app"
+	open "$(LOCAL_INSTALL_DIR)/$(NAME).app"
+.PHONY: install-local
