@@ -125,6 +125,54 @@ SLT_GENERATE_BOOL_TEST(isLowPowerModeMonitoringEnabled,
     XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite);
 }
 
+- (void)testMenuBarIconPulseDurationDefaultsToOneSecond
+{
+    XCTAssertEqual(self.defaults.slt_menuBarIconPulseDuration, 1.0);
+    XCTAssertEqual(SLTDefaultMenuBarIconPulseDuration, 1.0);
+}
+
+- (void)testMenuBarIconPulseDurationRoundTripStoresMilliseconds
+{
+    Auto defaults = self.defaults;
+    Auto key = SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds;
+
+    for(NSNumber *seconds in @[@0.5, @1.0, @2.0, @3.0, @5.0])
+    {
+        defaults.slt_menuBarIconPulseDuration = seconds.doubleValue;
+        XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, seconds.doubleValue);
+        XCTAssertEqual([defaults integerForKey:key], (NSInteger)(seconds.doubleValue * 1000), @"The Settings drop-down binds to whole milliseconds.");
+    }
+}
+
+- (void)testMenuBarIconPulseDurationIsLimitedToTheSupportedRange
+{
+    Auto defaults = self.defaults;
+    Auto key = SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds;
+
+    [defaults setInteger:10 forKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, SLTMinimumMenuBarIconPulseDuration, @"A very short pulse would wake the app too often.");
+    [defaults setInteger:999999 forKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, SLTMaximumMenuBarIconPulseDuration);
+    [defaults setInteger:250 forKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 0.25, @"The limits themselves are allowed.");
+    [defaults setInteger:10000 forKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 10.0);
+}
+
+- (void)testMenuBarIconPulseDurationFallsBackToTheDefaultForUnusableValues
+{
+    Auto defaults = self.defaults;
+    Auto key = SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds;
+
+    for(id value in @[@0, @(-1), @(-5000), @"fast", @[@1], @{@"a": @1}, [NSData data]])
+    {
+        [defaults setObject:value forKey:key];
+        XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 1.0, @"%@ must fall back to 1 second", value);
+    }
+    [defaults removeObjectForKey:key];
+    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 1.0);
+}
+
 - (void)testBatteryCapacityThreshold
 {
     Auto defaults = self.defaults;

@@ -18,6 +18,13 @@ SLT_EXPORT NSString * const SLTUserDefaultsKeyDeactivateOnUserSwitchEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconHighlightDisabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconColor;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconPulseDisabled;
+SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds;
+
+/// The default length of one pulse, in seconds.
+SLT_EXPORT const NSTimeInterval SLTDefaultMenuBarIconPulseDuration;
+/// The shortest and longest pulse the user defaults can ask for, in seconds.
+SLT_EXPORT const NSTimeInterval SLTMinimumMenuBarIconPulseDuration;
+SLT_EXPORT const NSTimeInterval SLTMaximumMenuBarIconPulseDuration;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyIsQuitOnTimerExpirationEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyBatteryCapacityThresholdEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyBatteryCapacityThreshold;
@@ -55,6 +62,13 @@ typedef NS_ENUM(NSInteger, SLTMenuBarIconColor) {
 
 /// Returns YES if the menu bar icon should not pulse while the sleep wake timer is active.
 @property (nonatomic, getter = slt_isMenuBarIconPulseDisabled) BOOL slt_menuBarIconPulseDisabled;
+
+/// The length of one pulse cycle in seconds, from the dimmest screen to the brightest and back.
+///
+/// The user defaults store whole milliseconds, so the Settings drop-down can bind to them.
+/// A missing, non-numeric or non-positive value returns the default of 1 second.
+/// Any other value is limited to the range of the minimum and maximum duration.
+@property (nonatomic) NSTimeInterval slt_menuBarIconPulseDuration;
 
 /// Returns YES if the menu bar icon should not be highlighted on left and right click.
 @property (nonatomic, getter = slt_isMenuBarIconHighlightDisabled) BOOL slt_menuBarIconHighlightDisabled;

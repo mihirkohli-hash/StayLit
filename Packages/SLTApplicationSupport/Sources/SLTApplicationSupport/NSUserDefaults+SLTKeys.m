@@ -103,6 +103,32 @@ NSString * const SLTUserDefaultsKeyMenuBarIconColor = @"io.github.mihirkohli-has
     [self setInteger:menuBarIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor];
 }
 
+#pragma mark - Menu Bar Icon Pulse Duration
+
+NSString * const SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds = @"io.github.mihirkohli-hash.StayLit.MenuBarIconPulseDurationMilliseconds";
+const NSTimeInterval SLTDefaultMenuBarIconPulseDuration = 1.0;
+const NSTimeInterval SLTMinimumMenuBarIconPulseDuration = 0.25;
+const NSTimeInterval SLTMaximumMenuBarIconPulseDuration = 10.0;
+
+- (NSTimeInterval)slt_menuBarIconPulseDuration
+{
+    // A string or a missing key is not a duration. A zero or negative one would
+    // make the pulse timer fire without pause, so those fall back to the default as well.
+    Auto storedValue = [self objectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
+    if(![storedValue isKindOfClass:NSNumber.class] || [storedValue doubleValue] <= 0)
+    {
+        return SLTDefaultMenuBarIconPulseDuration;
+    }
+
+    Auto seconds = [storedValue doubleValue] / 1000.0;
+    return MIN(MAX(seconds, SLTMinimumMenuBarIconPulseDuration), SLTMaximumMenuBarIconPulseDuration);
+}
+
+- (void)setSlt_menuBarIconPulseDuration:(NSTimeInterval)duration
+{
+    [self setInteger:(NSInteger)llround(duration * 1000.0) forKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
+}
+
 #pragma mark - Battery Capacity Threshold
 
 NSString * const SLTUserDefaultsKeyBatteryCapacityThreshold = @"io.github.mihirkohli-hash.StayLit.BatteryCapacityThreshold";
