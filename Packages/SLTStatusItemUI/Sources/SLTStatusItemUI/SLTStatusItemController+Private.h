@@ -20,9 +20,14 @@ extern NSString * const SLTStatusItemPulseAnimationKey;
                    pulseDisabled:(BOOL)pulseDisabled
                     reduceMotion:(BOOL)reduceMotion;
 
-/// Starts or stops the pulse on a view. Starting twice keeps the running animation,
-/// because restarting it would make the icon jump.
-+ (void)setPulsing:(BOOL)pulsing forView:(NSView *)view;
+/// Starts or stops the fade of a whole view. This is for custom icons, which have no separate screen.
+///
+/// One fade down and back up takes `duration`. Starting again with the same duration keeps the
+/// running animation, because restarting it would make the icon jump. A different duration replaces it.
++ (void)setPulsing:(BOOL)pulsing forView:(NSView *)view duration:(NSTimeInterval)duration;
+
+/// The timer that steps through the pulse frames, or nil while the screen does not pulse.
+@property (nonatomic, nullable) NSTimer *pulseTimer;
 
 @end
 

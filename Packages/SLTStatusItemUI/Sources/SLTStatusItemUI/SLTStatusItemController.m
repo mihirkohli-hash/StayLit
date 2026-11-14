@@ -16,7 +16,6 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 @interface SLTStatusItemController ()
 @property (nonatomic, readwrite) NSStatusItem *systemStatusItem;
 @property (nonatomic) SLTStatusItemAppearance currentAppearance;
-@property (nonatomic, nullable) NSTimer *pulseTimer;
 @property (nonatomic) NSUInteger pulseFrameIndex;
 @end
 
@@ -165,7 +164,7 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
     return appearance == SLTStatusItemAppearanceActive && !pulseDisabled && !reduceMotion;
 }
 
-+ (void)setPulsing:(BOOL)pulsing forView:(NSView *)view
++ (void)setPulsing:(BOOL)pulsing forView:(NSView *)view duration:(NSTimeInterval)duration
 {
     view.wantsLayer = YES;
     Auto layer = view.layer;
@@ -176,7 +175,10 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
         return;
     }
 
-    if([layer animationForKey:SLTStatusItemPulseAnimationKey] != nil)
+    // The fade reverses by itself, so each direction takes half of the cycle.
+    Auto halfCycle = duration / 2.0;
+    Auto runningAnimation = [layer animationForKey:SLTStatusItemPulseAnimationKey];
+    if(runningAnimation != nil && runningAnimation.duration == halfCycle)
     {
         return;
     }
@@ -185,7 +187,7 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
     Auto animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     animation.fromValue = @1.0;
     animation.toValue = @0.35;
-    animation.duration = 0.5;
+    animation.duration = halfCycle;
     animation.autoreverses = YES;
     animation.repeatCount = HUGE_VALF;
     animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
@@ -204,32 +206,44 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
                                                            pulseDisabled:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled
                                                             reduceMotion:NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion];
 
+    Auto duration = NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration;
+
     // The built-in icon pulses its screen. A custom icon has no separate screen, so it fades as a whole.
     Auto canPulseScreen = SLTStatusItemImageProvider.currentProvider.activePulseFrames != nil;
     if(shouldPulse && canPulseScreen)
     {
-        [SLTStatusItemController setPulsing:NO forView:button];
-        [self startScreenPulse];
+        [SLTStatusItemController setPulsing:NO forView:button duration:duration];
+        [self startScreenPulseWithDuration:duration];
     }
     else
     {
         [self stopScreenPulse];
-        [SLTStatusItemController setPulsing:shouldPulse forView:button];
+        [SLTStatusItemController setPulsing:shouldPulse forView:button duration:duration];
     }
 }
 
-- (void)startScreenPulse
+- (void)startScreenPulseWithDuration:(NSTimeInterval)duration
 {
+    // One cycle shows every frame once, so a frame lasts one frame's share of the duration.
+    Auto frameCount = SLTStatusItemImageProvider.currentProvider.activePulseFrames.count;
+    Auto interval = duration / (NSTimeInterval)MAX(frameCount, 1u);
+
     if(self.pulseTimer != nil)
     {
-        return;
+        // The same speed keeps running. A new speed replaces the timer, and the frames carry on from where they were.
+        if(fabs(self.pulseTimer.timeInterval - interval) < 0.0001)
+        {
+            return;
+        }
+        [self.pulseTimer invalidate];
+        self.pulseTimer = nil;
     }
 
     AutoWeak weakSelf = self;
-    Auto timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer *timer) {
+    Auto timer = [NSTimer timerWithTimeInterval:interval repeats:YES block:^(NSTimer *timer) {
         [weakSelf showNextPulseFrame];
     }];
-    timer.tolerance = 0.03;
+    timer.tolerance = interval * 0.25;
 
     // Common modes keep the pulse running while a menu is open.
     [NSRunLoop.mainRunLoop addTimer:timer forMode:NSRunLoopCommonModes];

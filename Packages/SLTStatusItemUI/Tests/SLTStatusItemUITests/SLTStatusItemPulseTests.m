@@ -88,7 +88,7 @@
 - (void)testPulsingAddsAForeverRepeatingFadeThatReverses
 {
     Auto view = [SLTCountingLayerView new];
-    [SLTStatusItemController setPulsing:YES forView:view];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
 
     Auto animation = (CABasicAnimation *)[view.layer animationForKey:SLTStatusItemPulseAnimationKey];
     XCTAssertNotNil(animation);
@@ -104,18 +104,39 @@
 {
     // Adding the animation again would restart the fade and make the icon jump.
     Auto view = [SLTCountingLayerView new];
-    [SLTStatusItemController setPulsing:YES forView:view];
-    [SLTStatusItemController setPulsing:YES forView:view];
-    [SLTStatusItemController setPulsing:YES forView:view];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
 
     XCTAssertEqual(((SLTCountingLayer *)view.layer).addAnimationCount, 1u);
+}
+
+- (void)testFadeTakesHalfTheDurationInEachDirection
+{
+    Auto view = [SLTCountingLayerView new];
+    [SLTStatusItemController setPulsing:YES forView:view duration:3.0];
+
+    Auto animation = (CABasicAnimation *)[view.layer animationForKey:SLTStatusItemPulseAnimationKey];
+    XCTAssertEqual(animation.duration, 1.5, @"The fade reverses, so down plus up is one full duration.");
+}
+
+- (void)testFadeIsReplacedWhenTheDurationChangesButKeptWhenItStaysTheSame
+{
+    Auto view = [SLTCountingLayerView new];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
+    XCTAssertEqual(((SLTCountingLayer *)view.layer).addAnimationCount, 1u, @"The same duration must not restart the fade.");
+
+    [SLTStatusItemController setPulsing:YES forView:view duration:2.0];
+    XCTAssertEqual(((SLTCountingLayer *)view.layer).addAnimationCount, 2u);
+    XCTAssertEqual([view.layer animationForKey:SLTStatusItemPulseAnimationKey].duration, 1.0);
 }
 
 - (void)testStoppingRemovesTheAnimationAndLeavesTheIconFullyVisible
 {
     Auto view = [SLTCountingLayerView new];
-    [SLTStatusItemController setPulsing:YES forView:view];
-    [SLTStatusItemController setPulsing:NO forView:view];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
+    [SLTStatusItemController setPulsing:NO forView:view duration:1.0];
 
     XCTAssertNil([view.layer animationForKey:SLTStatusItemPulseAnimationKey]);
     XCTAssertEqual(view.layer.opacity, 1.0f);
@@ -124,16 +145,16 @@
 - (void)testStoppingWithoutAPulseIsHarmless
 {
     Auto view = [SLTCountingLayerView new];
-    [SLTStatusItemController setPulsing:NO forView:view];
+    [SLTStatusItemController setPulsing:NO forView:view duration:1.0];
     XCTAssertEqual(view.layer.animationKeys.count, 0u);
 }
 
 - (void)testPulsingCanStartAgainAfterAStop
 {
     Auto view = [SLTCountingLayerView new];
-    [SLTStatusItemController setPulsing:YES forView:view];
-    [SLTStatusItemController setPulsing:NO forView:view];
-    [SLTStatusItemController setPulsing:YES forView:view];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
+    [SLTStatusItemController setPulsing:NO forView:view duration:1.0];
+    [SLTStatusItemController setPulsing:YES forView:view duration:1.0];
 
     XCTAssertNotNil([view.layer animationForKey:SLTStatusItemPulseAnimationKey]);
     XCTAssertEqual(((SLTCountingLayer *)view.layer).addAnimationCount, 2u);
@@ -193,6 +214,37 @@
     XCTAssertTrue(button.image == SLTStatusItemImageProvider.currentProvider.inactiveIconImage, @"Deactivating shows the inactive icon.");
 
     [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
+}
+
+- (void)testFrameTimerFollowsThePulseDuration
+{
+    Auto previous = [NSUserDefaults.standardUserDefaults objectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
+
+    Auto controller = [SLTStatusItemController new];
+    Auto button = controller.systemStatusItem.button;
+    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
+
+    controller.appearance = SLTStatusItemAppearanceActive;
+    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 1.0 / 16.0, 0.0001, @"The default is a one second cycle.");
+
+    // A shorter pulse steps faster, and the running pulse picks the new speed up at once.
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 0.5;
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 0.5 / 16.0, 0.0001);
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.8], 10u, @"A 0.5 second pulse goes through most frames in 0.8 seconds.");
+
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 3.0;
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 3.0 / 16.0, 0.0001);
+    XCTAssertLessThanOrEqual([self distinctImagesShownBy:button over:0.8], 7u, @"A 3 second pulse is much slower.");
+
+    controller.appearance = SLTStatusItemAppearanceInactive;
+    XCTAssertNil(controller.pulseTimer, @"Deactivating stops the timer, whatever the speed.");
+    [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
+    if(previous) { [NSUserDefaults.standardUserDefaults setObject:previous forKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds]; }
+    else { [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds]; }
 }
 
 - (void)testPulseSurvivesAnIconColorChangeWhileRunning
