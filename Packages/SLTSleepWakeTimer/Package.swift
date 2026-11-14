@@ -15,5 +15,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "SLTSleepWakeTimer", dependencies: ["SLTApplicationSupport"]),
+        .testTarget(name: "SLTSleepWakeTimerTests", dependencies: ["SLTSleepWakeTimer"]),
     ]
 )

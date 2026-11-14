@@ -6,6 +6,7 @@
 
 #import <SLTSleepWakeTimer/SLTSleepWakeTimer.h>
 #import <SLTCommon/SLTCommon.h>
+#import "SLTSleepWakeTimer+Private.h"
 
 NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
 
@@ -90,9 +91,10 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
 
 #pragma mark - Caffeinate Task Handling
 
-- (void)spawnCaffeinateTaskForTimeInterval:(NSTimeInterval)timeInterval
++ (NSArray<NSString *> *)caffeinateArgumentsForTimeInterval:(NSTimeInterval)timeInterval
+                                                userDefaults:(NSUserDefaults *)defaults
+                                           processIdentifier:(int)processIdentifier
 {
-    Auto defaults = NSUserDefaults.standardUserDefaults;
     Auto arguments = [NSMutableArray<NSString *> new];
     if([defaults slt_shouldAllowDisplaySleep])
     {
@@ -116,12 +118,20 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
         [arguments addObject:[NSString stringWithFormat:@"-t %.f", timeInterval]];
     }
 
-    [arguments addObject:[NSString stringWithFormat:@"-w %i",
-                          NSProcessInfo.processInfo.processIdentifier]];
+    [arguments addObject:[NSString stringWithFormat:@"-w %i", processIdentifier]];
+
+    return [arguments copy];
+}
+
+- (void)spawnCaffeinateTaskForTimeInterval:(NSTimeInterval)timeInterval
+{
+    Auto arguments = [SLTSleepWakeTimer caffeinateArgumentsForTimeInterval:timeInterval
+                                                              userDefaults:NSUserDefaults.standardUserDefaults
+                                                         processIdentifier:NSProcessInfo.processInfo.processIdentifier];
 
     [self willChangeValueForKey:@"scheduled"];
     self.caffeinateTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/caffeinate"
-                                                   arguments:[arguments copy]];
+                                                   arguments:arguments];
 
     // Termination Handler
     AutoWeak weakSelf = self;

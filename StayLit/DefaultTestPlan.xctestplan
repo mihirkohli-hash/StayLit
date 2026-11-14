@@ -34,6 +34,13 @@
     },
     {
       "target" : {
+        "containerPath" : "container:Packages\/SLTSleepWakeTimer",
+        "identifier" : "SLTSleepWakeTimerTests",
+        "name" : "SLTSleepWakeTimerTests"
+      }
+    },
+    {
+      "target" : {
         "containerPath" : "container:Packages\/SLTApplicationSupport",
         "identifier" : "SLTApplicationSupportTests",
         "name" : "SLTApplicationSupportTests"
