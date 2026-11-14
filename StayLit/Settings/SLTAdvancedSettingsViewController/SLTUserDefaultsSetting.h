@@ -1,0 +1,24 @@
+//
+//  SLTUserDefaultsSetting.h
+//  StayLit
+//
+//
+
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface SLTUserDefaultsSetting : NSObject
+@property (copy, nonatomic, readonly) NSString *title;
+@property (copy, nonatomic, readonly) NSString *key;
+@property (nonatomic, readwrite) BOOL value;
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithTitle:(NSString *)title key:(NSString *)defaultsKey;
+
+/// Reset the setting to its default value.
+- (void)reset;
+
+@end
+
+NS_ASSUME_NONNULL_END

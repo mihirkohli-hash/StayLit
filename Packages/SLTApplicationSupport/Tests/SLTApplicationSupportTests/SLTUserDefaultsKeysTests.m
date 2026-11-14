@@ -1,0 +1,110 @@
+//
+//  SLTUserDefaultsKeysTests.m
+//  SLTApplicationSupport
+//
+//
+
+#import <XCTest/XCTest.h>
+#import <SLTCommon/SLTCommon.h>
+#import <SLTApplicationSupport/SLTApplicationSupport.h>
+#import "../../Sources/SLTApplicationSupport/SLTApplicationSupportLog.h"
+
+#define SLT_GENERATE_BOOL_TEST(_short_getter_name, _property_name, _defaults_key)           \
+- (void)testProperty_##_property_name                                                       \
+{                                                                                           \
+    Auto defaults = self.defaults;                                                          \
+    Auto key = _defaults_key;                                                               \
+                                                                                            \
+    defaults.slt_##_property_name = YES;                                                    \
+    XCTAssertTrue([defaults slt_##_short_getter_name]);                                     \
+    XCTAssertTrue([defaults boolForKey:key]);                                               \
+                                                                                            \
+    defaults.slt_##_property_name = NO;                                                     \
+    XCTAssertFalse([defaults slt_##_short_getter_name]);                                    \
+    XCTAssertFalse([defaults boolForKey:key]);                                              \
+                                                                                            \
+    [defaults setBool:YES forKey:key];                                                      \
+    XCTAssertTrue([defaults slt_##_short_getter_name]);                                     \
+    os_log(SLTApplicationSupportLog(), "Tested User Defaults Key '%{public}@'.", key);      \
+}
+
+@interface SLTUserDefaultsKeysTests : XCTestCase
+@property (nonatomic) NSUserDefaults *defaults;
+@end
+
+@implementation SLTUserDefaultsKeysTests
+
+- (void)setUp
+{
+    [super setUp];
+    
+    self.defaults = [[NSUserDefaults alloc] initWithSuiteName:NSStringFromClass([self class])];
+}
+
+SLT_GENERATE_BOOL_TEST(isActivatedOnLaunch,
+                       activateOnLaunch,
+                       SLTUserDefaultsKeyActivateOnLaunch);
+
+SLT_GENERATE_BOOL_TEST(shouldAllowDisplaySleep,
+                       allowDisplaySleep,
+                       SLTUserDefaultsKeyAllowDisplaySleep);
+
+SLT_GENERATE_BOOL_TEST(isKeepAwakeOnLidCloseEnabled,
+                       keepAwakeOnLidCloseEnabled,
+                       SLTUserDefaultsKeyKeepAwakeOnLidCloseEnabled);
+
+SLT_GENERATE_BOOL_TEST(isMenuBarIconHighlightDisabled,
+                       menuBarIconHighlightDisabled,
+                       SLTUserDefaultsKeyMenuBarIconHighlightDisabled);
+
+SLT_GENERATE_BOOL_TEST(arePreReleaseUpdatesEnabled,
+                       preReleaseUpdatesEnabled,
+                       SLTUserDefaultsKeyPreReleaseUpdatesEnabled);
+
+SLT_GENERATE_BOOL_TEST(isQuitOnTimerExpirationEnabled,
+                       quitOnTimerExpirationEnabled,
+                       SLTUserDefaultsKeyIsQuitOnTimerExpirationEnabled);
+
+SLT_GENERATE_BOOL_TEST(isActivateOnExternalDisplayConnectedEnabled,
+                       activateOnExternalDisplayConnectedEnabled,
+                       SLTUserDefaultsKeyActivateOnExternalDisplayConnectedEnabled);
+
+SLT_GENERATE_BOOL_TEST(isDeactivateOnUserSwitchEnabled,
+                       deactivateOnUserSwitchEnabled,
+                       SLTUserDefaultsKeyDeactivateOnUserSwitchEnabled);
+
+SLT_GENERATE_BOOL_TEST(isBatteryCapacityThresholdEnabled,
+                       batteryCapacityThresholdEnabled,
+                       SLTUserDefaultsKeyBatteryCapacityThresholdEnabled);
+
+SLT_GENERATE_BOOL_TEST(isLowPowerModeMonitoringEnabled,
+                       lowPowerModeMonitoringEnabled,
+                       SLTUserDefaultsKeyLowPowerModeMonitoringEnabled);
+
+- (void)testBatteryCapacityThreshold
+{
+    Auto defaults = self.defaults;
+    Auto key = SLTUserDefaultsKeyBatteryCapacityThreshold;
+    
+    defaults.slt_batteryCapacityThreshold = 90.0f;
+    XCTAssertEqual([defaults slt_batteryCapacityThreshold], 90.0f);
+    XCTAssertEqual([defaults floatForKey:key], 90.0f);
+    
+    [defaults setFloat:50.0f forKey:key];
+    XCTAssertEqual([defaults slt_batteryCapacityThreshold], 50.0f);
+    
+    // Below 10%
+    defaults.slt_batteryCapacityThreshold = 0.1f;
+    XCTAssertEqual([defaults slt_batteryCapacityThreshold], 10.0f);
+    XCTAssertEqual([defaults floatForKey:key], 0.1f); // TODO: Maybe the setter should catch this?
+    
+    [defaults setFloat:0.2f forKey:key];
+    XCTAssertEqual([defaults slt_batteryCapacityThreshold], 10.0f);
+    
+    // Over 100%
+    defaults.slt_batteryCapacityThreshold = 512.0f; // TODO: Maybe this should be invalid?
+    XCTAssertEqual([defaults slt_batteryCapacityThreshold], 512.0f);
+    XCTAssertEqual([defaults floatForKey:key], 512.0f);
+}
+
+@end

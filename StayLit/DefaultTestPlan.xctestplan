@@ -1,0 +1,44 @@
+{
+  "configurations" : [
+    {
+      "id" : "84672315-AFF7-4555-9A40-85A2514E11C8",
+      "name" : "Default Configuration",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:StayLit.xcodeproj",
+      "identifier" : "DA637B3819F14693004C8838",
+      "name" : "StayLit"
+    },
+    "testExecutionOrdering" : "random"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/SLTActivationDurations",
+        "identifier" : "SLTActivationDurationsTests",
+        "name" : "SLTActivationDurationsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/SLTApplicationEvents",
+        "identifier" : "SLTApplicationEventsTests",
+        "name" : "SLTApplicationEventsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/SLTApplicationSupport",
+        "identifier" : "SLTApplicationSupportTests",
+        "name" : "SLTApplicationSupportTests"
+      }
+    }
+  ],
+  "version" : 1
+}

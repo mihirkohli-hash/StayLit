@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:README.md">
+   </FileRef>
+   <FileRef
+      location = "group:CHANGELOG.md">
+   </FileRef>
+   <FileRef
+      location = "container:StayLit.xcodeproj">
+   </FileRef>
+   <Group
+      location = "group:"
+      name = "Packages">
+      <FileRef
+         location = "group:Packages/SLTActivationDurations">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTApplicationEvents">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTApplicationSupport">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTDeviceInfo">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTSleepWakeTimer">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTStatusItemUI">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTUserNotifications">
+      </FileRef>
+      <FileRef
+         location = "group:Packages/SLTCommon">
+      </FileRef>
+   </Group>
+</Workspace>
