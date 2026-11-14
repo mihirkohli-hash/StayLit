@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, nonatomic, readonly) SLTStatusItemImageProvider *currentProvider;
 
 /// Returns a menu bar icon provider for the built-in icon images.
-/// @note The built-in icons are the `laptopcomputer` SF Symbol with a dim
-///       screen when inactive and a solid screen when active.
+/// @note The built-in icons are the `desktopcomputer` SF Symbol with a lit
+///       screen when active and a dark screen when inactive.
 @property (class, nonatomic, readonly) SLTStatusItemImageProvider *standardProvider;
 
 /// Returns a status item icon provider for the custom active/inactive

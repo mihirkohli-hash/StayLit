@@ -6,6 +6,7 @@
 
 #import <SLTSleepWakeTimer/SLTSleepWakeTimer.h>
 #import <SLTCommon/SLTCommon.h>
+#import <SLTSleepWakeTimer/SLTClosedLidSleepGuard.h>
 #import "SLTSleepWakeTimer+Private.h"
 
 NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
@@ -132,6 +133,14 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
     [self willChangeValueForKey:@"scheduled"];
     self.caffeinateTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/caffeinate"
                                                    arguments:arguments];
+
+    // On battery, caffeinate cannot keep a closed lid awake. The guard can, but only
+    // when the user gave the one-time permission. Without it, the session still runs.
+    if([NSUserDefaults.standardUserDefaults slt_isKeepAwakeOnLidCloseEnabled])
+    {
+        [SLTClosedLidSleepGuard beginSessionWithWatchedProcessIdentifier:NSProcessInfo.processInfo.processIdentifier
+                                             caffeinateProcessIdentifier:self.caffeinateTask.processIdentifier];
+    }
 
     // Termination Handler
     AutoWeak weakSelf = self;

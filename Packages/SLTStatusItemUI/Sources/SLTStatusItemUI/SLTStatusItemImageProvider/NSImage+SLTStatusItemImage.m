@@ -17,21 +17,21 @@ const NSImageName SLTStatusItemInactiveImageName = @"InactiveIcon";
 
 + (NSImage *)slt_defaultActiveIconImage
 {
-    return [self laptopSymbolWithSolidScreen:YES];
+    return [self desktopSymbolWithLitScreen:YES];
 }
 
 + (NSImage *)slt_defaultInactiveIconImage
 {
-    return [self laptopSymbolWithSolidScreen:NO];
+    return [self desktopSymbolWithLitScreen:NO];
 }
 
-// The laptop symbol draws its screen as a translucent layer, which reads as
-// "off". A palette configuration with one color for both layers makes the
-// screen solid, which reads as "on".
-+ (NSImage *)laptopSymbolWithSolidScreen:(BOOL)solidScreen
+// The symbol draws its screen as a translucent layer, which looks lit. A palette
+// configuration with one color for both layers makes the screen the same as the
+// body, which looks switched off.
++ (NSImage *)desktopSymbolWithLitScreen:(BOOL)litScreen
 {
-    NSImage *image = [NSImage imageWithSystemSymbolName:@"laptopcomputer" accessibilityDescription:nil];
-    if(solidScreen)
+    NSImage *image = [NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil];
+    if(!litScreen)
     {
         Auto configuration = [NSImageSymbolConfiguration configurationWithPaletteColors:@[NSColor.blackColor, NSColor.blackColor]];
         image = [image imageWithSymbolConfiguration:configuration];

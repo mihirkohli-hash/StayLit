@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <SLTApplicationSupport/SLTApplicationSupport.h>
 #import <SLTCommon/SLTExport.h>
+#import <SLTSleepWakeTimer/SLTClosedLidSleepGuard.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

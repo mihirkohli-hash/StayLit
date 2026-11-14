@@ -8,6 +8,6 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)-spki</string>
 	</array>
 	<key>com.apple.security.app-sandbox</key>
-	<true/>
+	<false/>
 </dict>
 </plist>

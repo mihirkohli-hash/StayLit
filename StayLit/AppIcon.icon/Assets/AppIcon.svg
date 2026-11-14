@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-    <g id="Laptop" fill="#000000" stroke="none">
-        <path fill-rule="evenodd" d="M 262 290 H 762 A 52 52 0 0 1 814 342 V 610 H 210 V 342 A 52 52 0 0 1 262 290 Z M 262 342 V 558 H 762 V 342 Z"/>
-        <rect id="Screen" x="262" y="342" width="500" height="216" fill-opacity="0.4"/>
-        <rect id="Base" x="132" y="640" width="760" height="56" rx="28"/>
+    <g id="Desktop" fill="#000000" stroke="none">
+        <path fill-rule="evenodd" d="M 268 232 H 756 A 56 56 0 0 1 812 288 V 596 A 56 56 0 0 1 756 652 H 268 A 56 56 0 0 1 212 596 V 288 A 56 56 0 0 1 268 232 Z M 244 264 V 560 H 780 V 264 Z"/>
+        <rect id="Screen" x="244" y="264" width="536" height="296" fill-opacity="0.4"/>
+        <path id="Neck" d="M 452 652 H 572 L 590 740 H 434 Z"/>
+        <rect id="Foot" x="392" y="740" width="240" height="44" rx="22"/>
     </g>
 </svg>

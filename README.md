@@ -12,7 +12,14 @@ The app is a small wrapper around Apple's `caffeinate` command line utility. All
 
 ### Does it work on a MacBook with a closed lid?
 
-Yes, if you turn on **Stay awake when the lid is closed (requires power adapter)** in the Advanced settings, and the Mac is connected to power. This runs `caffeinate -s`, and macOS ignores that assertion on battery, so the Mac still sleeps when you close the lid unplugged. Keeping a closed MacBook running in a bag or other enclosed space can overheat it.
+Yes, if you turn on **Stay awake when the lid is closed** in the Advanced settings.
+
+* **On power:** StayLit adds `caffeinate -s` to keep the Mac awake.
+* **On battery:** macOS has no supported way to do this, so StayLit turns on the hidden `SleepDisabled` power setting with `pmset`. That needs administrator rights. The first time you activate StayLit on battery, it asks for your administrator password once. It then adds a rule in `/etc/sudoers.d/staylit` that lets your user run only `pmset -a disablesleep 0` and `pmset -a disablesleep 1` without a password.
+* **Turning it off again:** a small watchdog process turns `SleepDisabled` off when you deactivate StayLit, when the timer ends, when StayLit quits, and when StayLit crashes. If a logout stops the watchdog, StayLit turns the setting off the next time it starts. You can always run `sudo pmset -a disablesleep 0` yourself.
+* **Removing the permission:** run `sudo rm /etc/sudoers.d/staylit`.
+* **Build limits:** the battery mode only works in the Direct build, which does not use the App Sandbox. A sandboxed build cannot run `sudo`, so it stays on `caffeinate -s` and needs power.
+* **Risks:** a closed Mac that stays awake gets hot and drains its battery. Do not leave it in a bag or other enclosed space. The built-in display can stay lit under the lid.
 
 ## Is this dangerous?
 

@@ -601,6 +601,9 @@
         }
       }
     },
+    "Allow…" : {
+      "comment" : "Allow…"
+    },
     "Cancel" : {
       "comment" : "Cancel",
       "localizations" : {
@@ -1375,6 +1378,12 @@
           }
         }
       }
+    },
+    "Keep your Mac awake on battery?" : {
+      "comment" : "Keep your Mac awake on battery?"
+    },
+    "Not Now" : {
+      "comment" : "Not Now"
     },
     "OK" : {
       "comment" : "OK",
@@ -2214,8 +2223,11 @@
         }
       }
     },
-    "Stay awake when the lid is closed (requires power adapter)" : {
-      "comment" : "Stay awake when the lid is closed (requires power adapter)"
+    "Stay awake when the lid is closed" : {
+      "comment" : "Stay awake when the lid is closed"
+    },
+    "StayLit can keep your Mac awake with the lid closed, also on battery. It asks for your administrator password once, to allow only the two commands that turn this setting on and off. A closed Mac can get hot and drain its battery, so do not leave it in a bag." : {
+      "comment" : "StayLit can keep your Mac awake with the lid closed, also on battery. It asks for your administrator password once, to allow only the two commands that turn this setting on and off. A closed Mac can get hot and drain its battery, so do not leave it in a bag."
     },
     "The entered duration is invalid. Please try again." : {
       "comment" : "The entered duration is invalid. Please try again.",
@@ -2317,6 +2329,9 @@
           }
         }
       }
+    },
+    "The permission was not installed" : {
+      "comment" : "The permission was not installed"
     },
     "This duration has already been added." : {
       "comment" : "This duration has already been added.",

@@ -18,6 +18,7 @@
 
 @interface SLTAppController () <SLTStatusItemControllerDataSource, SLTStatusItemControllerDelegate, SLTActivationDurationsMenuControllerDelegate, SLTSleepWakeTimerDelegate>
 @property (nonatomic, readwrite) SLTSleepWakeTimer *sleepWakeTimer;
+@property (nonatomic) BOOL didOfferClosedLidPermission;
 @property (nonatomic, readwrite) SLTStatusItemController *statusItemController;
 @property (nonatomic) SLTActivationDurationsMenuController *menuController;
 
@@ -102,6 +103,8 @@
     Auto sleepWakeTimer = [SLTSleepWakeTimer new];
     sleepWakeTimer.delegate = self;
     self.sleepWakeTimer = sleepWakeTimer;
+
+    [SLTClosedLidSleepGuard resetIfLeftEnabledByPreviousRun];
     
     // Activate on launch if needed
     if([NSUserDefaults.standardUserDefaults slt_isActivatedOnLaunch])
@@ -136,12 +139,47 @@
             [NSApplication.sharedApplication terminate:nil];
         }
     };
+    [self offerClosedLidPermissionIfNeeded];
     [self.sleepWakeTimer scheduleWithTimeInterval:timeInterval completion:timerCompletion];
 
     // Post activation notification
     Auto fireDate = self.sleepWakeTimer.fireDate;
     Auto notification = [[SLTActivationUserNotification alloc] initWithFireDate:fireDate activating:YES];
     [SLTUserNotificationCenter.sharedCenter postNotification:notification];
+}
+
+// Keeping a closed lid awake on battery needs a one-time administrator permission.
+// The offer appears once per launch, and only when the Mac runs on battery.
+- (void)offerClosedLidPermissionIfNeeded
+{
+    if(![NSUserDefaults.standardUserDefaults slt_isKeepAwakeOnLidCloseEnabled]
+       || self.didOfferClosedLidPermission
+       || !SLTClosedLidSleepGuard.isSupported
+       || !SLTClosedLidSleepGuard.isOnBatteryPower
+       || SLTClosedLidSleepGuard.isAuthorized)
+    {
+        return;
+    }
+    self.didOfferClosedLidPermission = YES;
+
+    Auto alert = [NSAlert new];
+    alert.messageText = SLT_L10N_LID_PERMISSION_TITLE;
+    alert.informativeText = SLT_L10N_LID_PERMISSION_BODY;
+    [alert addButtonWithTitle:SLT_L10N_LID_PERMISSION_ALLOW];
+    [alert addButtonWithTitle:SLT_L10N_LID_PERMISSION_NOT_NOW];
+    if([alert runModal] != NSAlertFirstButtonReturn)
+    {
+        return;
+    }
+
+    NSError *error = nil;
+    if(![SLTClosedLidSleepGuard installAuthorizationWithError:&error])
+    {
+        Auto failure = [NSAlert new];
+        failure.messageText = SLT_L10N_LID_PERMISSION_FAILED_TITLE;
+        failure.informativeText = error.localizedDescription;
+        [failure runModal];
+    }
 }
 
 - (void)terminateTimer
