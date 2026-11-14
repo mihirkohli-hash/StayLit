@@ -53,6 +53,10 @@ SLT_GENERATE_BOOL_TEST(isKeepAwakeOnLidCloseEnabled,
                        keepAwakeOnLidCloseEnabled,
                        SLTUserDefaultsKeyKeepAwakeOnLidCloseEnabled);
 
+SLT_GENERATE_BOOL_TEST(isMenuBarIconPulseDisabled,
+                       menuBarIconPulseDisabled,
+                       SLTUserDefaultsKeyMenuBarIconPulseDisabled);
+
 SLT_GENERATE_BOOL_TEST(isMenuBarIconHighlightDisabled,
                        menuBarIconHighlightDisabled,
                        SLTUserDefaultsKeyMenuBarIconHighlightDisabled);

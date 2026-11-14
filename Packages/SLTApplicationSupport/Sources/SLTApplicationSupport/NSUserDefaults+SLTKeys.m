@@ -48,6 +48,10 @@ SLT_GENERATE_BOOL_PROPERTY(isKeepAwakeOnLidCloseEnabled,
                            keepAwakeOnLidCloseEnabled,
                            KeepAwakeOnLidCloseEnabled);
 
+SLT_GENERATE_BOOL_PROPERTY(isMenuBarIconPulseDisabled,
+                           menuBarIconPulseDisabled,
+                           MenuBarIconPulseDisabled);
+
 SLT_GENERATE_BOOL_PROPERTY(isMenuBarIconHighlightDisabled,
                            menuBarIconHighlightDisabled,
                            MenuBarIconHighlightDisabled);

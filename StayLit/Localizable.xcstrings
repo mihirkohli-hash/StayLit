@@ -1147,6 +1147,9 @@
         }
       }
     },
+    "Do not pulse the menu bar icon while active" : {
+      "comment" : "Do not pulse the menu bar icon while active"
+    },
     "Do you really want to reset the activation durations to the default values?" : {
       "comment" : "Do you really want to reset the activation durations to the default values?",
       "localizations" : {

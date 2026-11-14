@@ -51,6 +51,7 @@
     [settings addObject:[[SLTUserDefaultsSetting alloc] initWithTitle:SLT_L10N_QUIT_ON_TIMER_EXPIRATION key:SLTUserDefaultsKeyIsQuitOnTimerExpirationEnabled]];
     [settings addObject:[[SLTUserDefaultsSetting alloc] initWithTitle:SLT_L10N_ALLOW_DISPLAY_SLEEP key:SLTUserDefaultsKeyAllowDisplaySleep]];
     [settings addObject:[[SLTUserDefaultsSetting alloc] initWithTitle:SLT_L10N_KEEP_AWAKE_ON_LID_CLOSE key:SLTUserDefaultsKeyKeepAwakeOnLidCloseEnabled]];
+    [settings addObject:[[SLTUserDefaultsSetting alloc] initWithTitle:SLT_L10N_DISABLE_ICON_PULSE key:SLTUserDefaultsKeyMenuBarIconPulseDisabled]];
     [settings addObject:[[SLTUserDefaultsSetting alloc] initWithTitle:SLT_L10N_ACTIVATE_ON_EXTERNAL_DISPLAY key:SLTUserDefaultsKeyActivateOnExternalDisplayConnectedEnabled]];
     [settings addObject:[[SLTUserDefaultsSetting alloc] initWithTitle:SLT_L10N_DEACTIVATE_ON_USER_SWITCH key:SLTUserDefaultsKeyDeactivateOnUserSwitchEnabled]];
     

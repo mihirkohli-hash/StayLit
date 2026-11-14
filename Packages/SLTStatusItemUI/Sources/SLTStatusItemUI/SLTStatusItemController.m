@@ -7,7 +7,11 @@
 #import <SLTStatusItemUI/SLTStatusItemController.h>
 #import <SLTCommon/SLTCommon.h>
 #import <SLTStatusItemUI/SLTStatusItemImageProvider.h>
+#import <QuartzCore/QuartzCore.h>
+#import "SLTStatusItemController+Private.h"
 #import "SLTStatusItemUILocalizedStrings.h"
+
+NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 
 @interface SLTStatusItemController ()
 @property (nonatomic, readwrite) NSStatusItem *systemStatusItem;
@@ -28,6 +32,12 @@
                                                selector:@selector(userDefaultsDidChange:)
                                                    name:NSUserDefaultsDidChangeNotification
                                                  object:nil];
+
+        // Reduce Motion is a system setting, so the pulse must follow it live.
+        [NSWorkspace.sharedWorkspace.notificationCenter addObserver:self
+                                                           selector:@selector(userDefaultsDidChange:)
+                                                               name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                                                             object:nil];
     }
     return self;
 }
@@ -35,12 +45,14 @@
 - (void)dealloc
 {
     [NSNotificationCenter.defaultCenter removeObserver:self name:NSUserDefaultsDidChangeNotification object:nil];
+    [NSWorkspace.sharedWorkspace.notificationCenter removeObserver:self name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:nil];
 }
 
 - (void)userDefaultsDidChange:(NSNotification *)notification
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         [self updateButtonImage];
+        [self updateButtonPulse];
     });
 }
 
@@ -107,6 +119,7 @@
 
     self.currentAppearance = appearance;
     [self updateButtonImage];
+    [self updateButtonPulse];
 
     Auto button = self.systemStatusItem.button;
     if(appearance == SLTStatusItemAppearanceActive)
@@ -132,6 +145,56 @@
     {
         button.image = image;
     }
+}
+
+#pragma mark - Pulse
+
++ (BOOL)shouldPulseForAppearance:(SLTStatusItemAppearance)appearance
+                   pulseDisabled:(BOOL)pulseDisabled
+                    reduceMotion:(BOOL)reduceMotion
+{
+    return appearance == SLTStatusItemAppearanceActive && !pulseDisabled && !reduceMotion;
+}
+
++ (void)setPulsing:(BOOL)pulsing forView:(NSView *)view
+{
+    view.wantsLayer = YES;
+    Auto layer = view.layer;
+
+    if(!pulsing)
+    {
+        [layer removeAnimationForKey:SLTStatusItemPulseAnimationKey];
+        return;
+    }
+
+    if([layer animationForKey:SLTStatusItemPulseAnimationKey] != nil)
+    {
+        return;
+    }
+
+    // Core Animation runs this in the window server, so the app needs no timer for it.
+    Auto animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    animation.fromValue = @1.0;
+    animation.toValue = @0.35;
+    animation.duration = 0.5;
+    animation.autoreverses = YES;
+    animation.repeatCount = HUGE_VALF;
+    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    [layer addAnimation:animation forKey:SLTStatusItemPulseAnimationKey];
+}
+
+- (void)updateButtonPulse
+{
+    Auto button = self.systemStatusItem.button;
+    if(button == nil)
+    {
+        return;
+    }
+
+    Auto shouldPulse = [SLTStatusItemController shouldPulseForAppearance:self.currentAppearance
+                                                           pulseDisabled:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled
+                                                            reduceMotion:NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion];
+    [SLTStatusItemController setPulsing:shouldPulse forView:button];
 }
 
 #pragma mark - Menu

@@ -55,6 +55,7 @@
 #define SLT_L10N_LID_PERMISSION_ALLOW NSLocalizedString(@"Allow…", @"Allow…")
 #define SLT_L10N_LID_PERMISSION_NOT_NOW NSLocalizedString(@"Not Now", @"Not Now")
 #define SLT_L10N_LID_PERMISSION_FAILED_TITLE NSLocalizedString(@"The permission was not installed", @"The permission was not installed")
+#define SLT_L10N_DISABLE_ICON_PULSE NSLocalizedString(@"Do not pulse the menu bar icon while active", @"Do not pulse the menu bar icon while active")
 #define SLT_L10N_ACTIVATE_ON_EXTERNAL_DISPLAY NSLocalizedString(@"Activate when an external display is connected", @"Activate when an external display is connected")
 #define SLT_L10N_DEACTIVATE_ON_USER_SWITCH NSLocalizedString(@"Deactivate when switched to another user account", @"Deactivate when switched to another user account")
 #define SLT_L10N_DURATIONS_ALERT_REALLY_RESET_TITLE NSLocalizedString(@"Reset Activation Durations", @"Reset Activation Durations")

@@ -17,6 +17,7 @@ SLT_EXPORT NSString * const SLTUserDefaultsKeyActivateOnExternalDisplayConnected
 SLT_EXPORT NSString * const SLTUserDefaultsKeyDeactivateOnUserSwitchEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconHighlightDisabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconColor;
+SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconPulseDisabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyIsQuitOnTimerExpirationEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyBatteryCapacityThresholdEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyBatteryCapacityThreshold;
@@ -51,6 +52,9 @@ typedef NS_ENUM(NSInteger, SLTMenuBarIconColor) {
 
 /// The color of the menu bar icon. A missing or unknown stored value returns white.
 @property (nonatomic) SLTMenuBarIconColor slt_menuBarIconColor;
+
+/// Returns YES if the menu bar icon should not pulse while the sleep wake timer is active.
+@property (nonatomic, getter = slt_isMenuBarIconPulseDisabled) BOOL slt_menuBarIconPulseDisabled;
 
 /// Returns YES if the menu bar icon should not be highlighted on left and right click.
 @property (nonatomic, getter = slt_isMenuBarIconHighlightDisabled) BOOL slt_menuBarIconHighlightDisabled;
