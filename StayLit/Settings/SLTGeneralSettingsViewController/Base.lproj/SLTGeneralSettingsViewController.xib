@@ -172,12 +172,13 @@
                                 </textField>
                                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pp3-Pc-9mS">
                                     <rect key="frame" x="132" y="0.0" width="141" height="25"/>
-                                    <popUpButtonCell key="cell" type="push" title="Accent Color" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" tag="0" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Pa3-Pc-1aA" id="Pc3-Pc-5wU">
+                                    <popUpButtonCell key="cell" type="push" title="Opposite of Icon" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" tag="7" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Ph3-Pc-8hH" id="Pc3-Pc-5wU">
                                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="menu"/>
                                         <menu key="menu" id="Mn3-Pc-6vC">
                                             <items>
-                                                <menuItem title="Accent Color" tag="0" state="on" id="Pa3-Pc-1aA"/>
+                                                <menuItem title="Opposite of Icon" tag="7" state="on" id="Ph3-Pc-8hH"/>
+                                                <menuItem title="Accent Color" tag="0" id="Pa3-Pc-1aA"/>
                                                 <menuItem title="Green" tag="1" id="Pb3-Pc-2bB"/>
                                                 <menuItem title="Blue" tag="2" id="Pc3-Pc-3cC"/>
                                                 <menuItem title="Orange" tag="3" id="Pd3-Pc-4dD"/>

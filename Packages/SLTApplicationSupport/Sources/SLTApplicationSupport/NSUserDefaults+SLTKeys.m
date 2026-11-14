@@ -109,10 +109,17 @@ NSString * const SLTUserDefaultsKeyMenuBarIconPulseColor = @"io.github.mihirkohl
 
 - (SLTMenuBarIconPulseColor)slt_menuBarIconPulseColor
 {
-    Auto storedValue = [self integerForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
-    if(storedValue < SLTMenuBarIconPulseColorAccent || storedValue > SLTMenuBarIconPulseColorSameAsIcon)
+    // A missing key must not read as 0, which is a real choice (the accent color).
+    Auto storedObject = [self objectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
+    if(![storedObject isKindOfClass:NSNumber.class])
     {
-        return SLTMenuBarIconPulseColorAccent;
+        return SLTMenuBarIconPulseColorContrast;
+    }
+
+    Auto storedValue = [storedObject integerValue];
+    if(storedValue < SLTMenuBarIconPulseColorAccent || storedValue > SLTMenuBarIconPulseColorContrast)
+    {
+        return SLTMenuBarIconPulseColorContrast;
     }
     return (SLTMenuBarIconPulseColor)storedValue;
 }

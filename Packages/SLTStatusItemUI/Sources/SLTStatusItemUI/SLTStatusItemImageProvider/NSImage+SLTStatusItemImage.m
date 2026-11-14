@@ -44,11 +44,29 @@ const NSImageName SLTStatusItemInactiveImageName = @"InactiveIcon";
 
 const NSUInteger SLTStatusItemPulseFrameCount = 16;
 
+// The color that stands out from the icon body: black on a white body and white on a dark one.
+static NSColor *SLTOppositeOfIconColor(SLTMenuBarIconColor iconColor)
+{
+    switch(iconColor)
+    {
+        case SLTMenuBarIconColorWhite: return NSColor.blackColor;
+        case SLTMenuBarIconColorDark: return NSColor.whiteColor;
+        case SLTMenuBarIconColorFollowSystem: break;
+    }
+
+    // The follow-system body is the label color, which is white on a dark menu bar and black on a light one.
+    return [NSColor colorWithName:nil dynamicProvider:^NSColor *(NSAppearance *appearance) {
+        Auto match = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+        return [match isEqualToString:NSAppearanceNameDarkAqua] ? NSColor.blackColor : NSColor.whiteColor;
+    }];
+}
+
 // The system colors are dynamic, so each one adapts to a light or dark menu bar.
-static NSColor *SLTPulseScreenColor(SLTMenuBarIconPulseColor pulseColor, NSColor *bodyColor)
+static NSColor *SLTPulseScreenColor(SLTMenuBarIconPulseColor pulseColor, NSColor *bodyColor, SLTMenuBarIconColor iconColor)
 {
     switch(pulseColor)
     {
+        case SLTMenuBarIconPulseColorContrast: return SLTOppositeOfIconColor(iconColor);
         case SLTMenuBarIconPulseColorGreen: return NSColor.systemGreenColor;
         case SLTMenuBarIconPulseColorBlue: return NSColor.systemBlueColor;
         case SLTMenuBarIconPulseColorOrange: return NSColor.systemOrangeColor;
@@ -78,7 +96,7 @@ static NSColor *SLTPulseScreenColor(SLTMenuBarIconPulseColor pulseColor, NSColor
             if(color == SLTMenuBarIconColorWhite) { bodyColor = NSColor.whiteColor; }
             if(color == SLTMenuBarIconColorDark) { bodyColor = NSColor.blackColor; }
 
-            Auto screenColor = [SLTPulseScreenColor(pulseColor, bodyColor) colorWithAlphaComponent:screenAlpha];
+            Auto screenColor = [SLTPulseScreenColor(pulseColor, bodyColor, color) colorWithAlphaComponent:screenAlpha];
             Auto configuration = [NSImageSymbolConfiguration configurationWithPaletteColors:@[bodyColor, screenColor]];
             Auto symbol = [[NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil] imageWithSymbolConfiguration:configuration];
             [symbol drawInRect:rect];

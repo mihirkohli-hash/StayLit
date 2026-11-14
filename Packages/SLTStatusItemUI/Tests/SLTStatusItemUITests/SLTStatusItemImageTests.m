@@ -368,7 +368,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 - (void)testEveryPulseColorKeepsTheBodySteadyAndTheScreenBreathing
 {
     Auto firstChoice = (NSInteger)SLTMenuBarIconPulseColorAccent;
-    Auto lastChoice = (NSInteger)SLTMenuBarIconPulseColorSameAsIcon;
+    Auto lastChoice = (NSInteger)SLTMenuBarIconPulseColorContrast;
     for(NSInteger choice = firstChoice; choice <= lastChoice; choice++)
     {
         Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:(SLTMenuBarIconPulseColor)choice];
@@ -403,6 +403,70 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
     if(previous) { [defaults setObject:previous forKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
     else { [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
+}
+
+#pragma mark - Contrast pulse color (the default)
+
+- (void)testContrastPulseIsBlackOnAWhiteIcon
+{
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:SLTMenuBarIconPulseColorContrast];
+    Auto counts = SLTCountPixels(frames[0]); // the screen at full strength
+    XCTAssertGreaterThan(counts.white, 500u, @"The body stays white.");
+    XCTAssertGreaterThan(counts.black, 200u, @"The screen is black.");
+    XCTAssertEqual(counts.colored, 0u);
+}
+
+- (void)testContrastPulseIsWhiteOnADarkIcon
+{
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorDark pulseColor:SLTMenuBarIconPulseColorContrast];
+    Auto counts = SLTCountPixels(frames[0]);
+    XCTAssertGreaterThan(counts.black, 500u, @"The body stays black.");
+    XCTAssertGreaterThan(counts.white, 200u, @"The screen is white.");
+    XCTAssertEqual(counts.colored, 0u);
+}
+
+- (void)testContrastPulseWithFollowSystemIsTheOppositeOfTheMenuBarText
+{
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem pulseColor:SLTMenuBarIconPulseColorContrast];
+
+    __block SLTPixelCounts onDarkBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{ onDarkBar = SLTCountPixels(frames[0]); }];
+    __block SLTPixelCounts onLightBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    [[NSAppearance appearanceNamed:NSAppearanceNameAqua] performAsCurrentDrawingAppearance:^{ onLightBar = SLTCountPixels(frames[0]); }];
+
+    XCTAssertGreaterThan(onDarkBar.lightBody, 500u, @"On a dark menu bar the body is light.");
+    XCTAssertGreaterThan(onDarkBar.black, 200u, @"On a dark menu bar the screen is black.");
+    XCTAssertGreaterThan(onLightBar.darkBody, 500u, @"On a light menu bar the body is dark.");
+    XCTAssertGreaterThan(onLightBar.white, 200u, @"On a light menu bar the screen is white.");
+}
+
+- (void)testContrastPulseKeepsTheBodyAndChangesTheScreenBrightness
+{
+    for(NSNumber *iconColor in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
+    {
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue pulseColor:SLTMenuBarIconPulseColorContrast];
+        Auto strongest = SLTCountPixels(frames[0]);
+        Auto weakest = SLTCountPixels(frames[8]);
+        XCTAssertGreaterThan(strongest.alphaSum, weakest.alphaSum * 1.05, @"The screen must pulse for icon color %@", iconColor);
+    }
+}
+
+- (void)testTheDefaultStoredSettingsGiveTheContrastPulse
+{
+    Auto defaults = NSUserDefaults.standardUserDefaults;
+    Auto previousPulseColor = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
+    Auto previousIconColor = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconColor];
+    [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
+    [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
+
+    // With nothing stored the icon is white, so the pulse must be black.
+    Auto counts = SLTCountPixels(SLTStatusItemImageProvider.standardProvider.activePulseFrames[0]);
+    XCTAssertGreaterThan(counts.white, 500u);
+    XCTAssertGreaterThan(counts.black, 200u);
+    XCTAssertEqual(counts.colored, 0u);
+
+    if(previousPulseColor) { [defaults setObject:previousPulseColor forKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
+    if(previousIconColor) { [defaults setObject:previousIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor]; }
 }
 
 @end

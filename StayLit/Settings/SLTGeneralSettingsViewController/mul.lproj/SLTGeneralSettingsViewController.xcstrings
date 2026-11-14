@@ -739,6 +739,18 @@
         }
       }
     },
+    "Ph3-Pc-8hH.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Opposite of Icon\"; ObjectID = \"Ph3-Pc-8hH\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Opposite of Icon"
+          }
+        }
+      }
+    },
     "YWD-DY-pgf.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Start at Login\"; ObjectID = \"YWD-DY-pgf\";",
       "extractionState" : "extracted_with_value",

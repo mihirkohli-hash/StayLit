@@ -44,7 +44,7 @@
         // show no selection until the user picks one.
         [NSUserDefaults.standardUserDefaults registerDefaults:@{
             SLTUserDefaultsKeyMenuBarIconColor: @(SLTMenuBarIconColorWhite),
-            SLTUserDefaultsKeyMenuBarIconPulseColor: @(SLTMenuBarIconPulseColorAccent),
+            SLTUserDefaultsKeyMenuBarIconPulseColor: @(SLTMenuBarIconPulseColorContrast),
             SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds: @((NSInteger)(SLTDefaultMenuBarIconPulseDuration * 1000))
         }];
 
