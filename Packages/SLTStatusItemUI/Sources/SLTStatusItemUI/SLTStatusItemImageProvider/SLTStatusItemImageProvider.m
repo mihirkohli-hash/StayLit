@@ -31,6 +31,7 @@
     dispatch_once(&onceToken, ^{
         provider = [[self alloc] initWithActiveIconName:NSImage.slt_defaultActiveIconImage
                                        inactiveIconName:NSImage.slt_defaultInactiveIconImage];
+        provider.usesBuiltInIcons = YES;
     });
     
     return provider;
@@ -69,6 +70,7 @@
         self.baseInactiveIconImage = inactiveIcon;
         self.activeIconCache = [NSMutableDictionary new];
         self.inactiveIconCache = [NSMutableDictionary new];
+        self.pulseFramesCache = [NSMutableDictionary new];
     }
     return self;
 }
@@ -83,6 +85,25 @@
 - (NSImage *)inactiveIconImage
 {
     return [self coloredImageForBaseImage:self.baseInactiveIconImage cache:self.inactiveIconCache];
+}
+
+- (NSArray<NSImage *> *)activePulseFrames
+{
+    if(!self.usesBuiltInIcons)
+    {
+        return nil;
+    }
+
+    Auto color = NSUserDefaults.standardUserDefaults.slt_menuBarIconColor;
+    Auto cachedFrames = self.pulseFramesCache[@(color)];
+    if(cachedFrames != nil)
+    {
+        return cachedFrames;
+    }
+
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:color];
+    self.pulseFramesCache[@(color)] = frames;
+    return frames;
 }
 
 - (NSImage *)coloredImageForBaseImage:(NSImage *)baseImage cache:(NSMutableDictionary<NSNumber *, NSImage *> *)cache

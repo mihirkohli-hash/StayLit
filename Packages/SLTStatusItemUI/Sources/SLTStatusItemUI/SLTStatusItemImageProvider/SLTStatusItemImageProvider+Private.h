@@ -16,6 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
 // Colored variants by color, so the same image instance is returned until the color changes.
 @property (nonatomic) NSMutableDictionary<NSNumber *, NSImage *> *activeIconCache;
 @property (nonatomic) NSMutableDictionary<NSNumber *, NSImage *> *inactiveIconCache;
+@property (nonatomic) NSMutableDictionary<NSNumber *, NSArray<NSImage *> *> *pulseFramesCache;
+
+/// YES for the built-in icon, which has a separate screen that can pulse.
+@property (nonatomic) BOOL usesBuiltInIcons;
 
 /// The designated initializer for an image provider.
 /// @param activeIcon An NSImage representing the active state, a nil value sets the default icon.

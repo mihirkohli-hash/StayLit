@@ -40,6 +40,39 @@ const NSImageName SLTStatusItemInactiveImageName = @"InactiveIcon";
     return image;
 }
 
+#pragma mark - Pulse Frames
+
+const NSUInteger SLTStatusItemPulseFrameCount = 16;
+
++ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color
+{
+    Auto symbolSize = [NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil].size;
+    Auto frames = [NSMutableArray<NSImage *> arrayWithCapacity:SLTStatusItemPulseFrameCount];
+
+    for(NSUInteger index = 0; index < SLTStatusItemPulseFrameCount; index++)
+    {
+        // The screen starts at full strength and fades to about a third and back.
+        Auto phase = 2.0 * M_PI * (double)index / (double)SLTStatusItemPulseFrameCount;
+        Auto screenAlpha = (CGFloat)(0.675 + 0.325 * cos(phase));
+
+        Auto frame = [NSImage imageWithSize:symbolSize flipped:NO drawingHandler:^BOOL(NSRect rect) {
+            // Follow system uses the label color, which is white on a dark menu bar and black on a light one.
+            NSColor *bodyColor = NSColor.labelColor;
+            if(color == SLTMenuBarIconColorWhite) { bodyColor = NSColor.whiteColor; }
+            if(color == SLTMenuBarIconColorDark) { bodyColor = NSColor.blackColor; }
+
+            Auto screenColor = [NSColor.controlAccentColor colorWithAlphaComponent:screenAlpha];
+            Auto configuration = [NSImageSymbolConfiguration configurationWithPaletteColors:@[bodyColor, screenColor]];
+            Auto symbol = [[NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil] imageWithSymbolConfiguration:configuration];
+            [symbol drawInRect:rect];
+            return YES;
+        }];
+        frame.template = NO;
+        [frames addObject:frame];
+    }
+    return [frames copy];
+}
+
 #pragma mark - Icon Color
 
 + (NSImage *)slt_menuBarIconImageFromTemplateImage:(NSImage *)templateImage color:(SLTMenuBarIconColor)color

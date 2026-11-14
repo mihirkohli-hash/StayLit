@@ -22,6 +22,16 @@ BOOL SLTCustomIconImageFilesExist(void);
 @property (class, copy, nonatomic, readonly) NSImage *slt_customActiveIconImage;
 @property (class, copy, nonatomic, readonly) NSImage *slt_customInactiveIconImage;
 
+/// The number of images in one pulse cycle.
+extern const NSUInteger SLTStatusItemPulseFrameCount;
+
+/// Returns the images of one pulse cycle for the built-in icon.
+///
+/// The monitor body keeps the icon color. Only the screen changes: it glows in the macOS
+/// accent color and fades between bright and dim. The images are drawn on demand,
+/// so the body and the accent color follow the menu bar appearance and System Settings.
++ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color;
+
 /// Returns the template image drawn in the requested menu bar icon color.
 ///
 /// White and dark return a new image with a fixed color. Follow system returns the

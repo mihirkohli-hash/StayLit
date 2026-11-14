@@ -16,6 +16,10 @@ typedef struct {
     NSUInteger white;       // opaque pixels with a white color
     NSUInteger black;       // opaque pixels with a black color
     NSUInteger translucent; // pixels that are neither transparent nor opaque, such as a dimmed screen
+    double alphaSum;        // total opacity, which grows with the brightness of the screen
+    NSUInteger colored;     // opaque-enough pixels whose color is clearly not white, black or gray
+    NSUInteger lightBody;   // mostly opaque light pixels, which includes the 85% opaque label color
+    NSUInteger darkBody;    // mostly opaque dark pixels
 } SLTPixelCounts;
 
 static const NSUInteger SLTRenderScale = 8;
@@ -39,12 +43,22 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     [image drawInRect:NSMakeRect(0, 0, width, height)];
     [NSGraphicsContext restoreGraphicsState];
 
-    SLTPixelCounts counts = {0, 0, 0};
+    SLTPixelCounts counts = {0, 0, 0, 0, 0, 0, 0};
     for(NSInteger y = 0; y < height; y++)
     {
         for(NSInteger x = 0; x < width; x++)
         {
             Auto color = [bitmap colorAtX:x y:y];
+            counts.alphaSum += color.alphaComponent;
+            if(color.alphaComponent > 0.5)
+            {
+                if(MIN(MIN(color.redComponent, color.greenComponent), color.blueComponent) > 0.9) { counts.lightBody++; }
+                if(MAX(MAX(color.redComponent, color.greenComponent), color.blueComponent) < 0.1) { counts.darkBody++; }
+            }
+            if(color.alphaComponent > 0.3 && (MAX(MAX(color.redComponent, color.greenComponent), color.blueComponent) - MIN(MIN(color.redComponent, color.greenComponent), color.blueComponent)) > 0.25)
+            {
+                counts.colored++;
+            }
             if(color.alphaComponent > 0.98)
             {
                 if(color.redComponent > 0.98 && color.greenComponent > 0.98 && color.blueComponent > 0.98) { counts.white++; }
@@ -183,6 +197,118 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     Auto image = SLTStatusItemImageProvider.standardProvider.inactiveIconImage;
     XCTAssertFalse(image.isTemplate);
     XCTAssertGreaterThan(SLTCountPixels(image).white, 500u, @"A corrupt value falls back to white.");
+}
+
+#pragma mark - Pulse frames
+
+- (void)testPulseFramesCoverOneFullCycle
+{
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
+    XCTAssertEqual(frames.count, SLTStatusItemPulseFrameCount);
+    XCTAssertEqual(frames.count, 16u);
+
+    Auto iconSize = NSImage.slt_defaultActiveIconImage.size;
+    for(NSImage *frame in frames)
+    {
+        XCTAssertFalse(frame.isTemplate, @"A colored screen cannot be a template image.");
+        XCTAssertEqual(frame.size.width, iconSize.width);
+        XCTAssertEqual(frame.size.height, iconSize.height);
+    }
+}
+
+- (void)testPulseKeepsTheMonitorBodySteadyInEveryColor
+{
+    // Only the screen may change. The body is the opaque part, so its pixel count must not move.
+    for(NSNumber *colorValue in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
+    {
+        Auto color = (SLTMenuBarIconColor)colorValue.integerValue;
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:color];
+        Auto first = SLTCountPixels(frames.firstObject);
+
+        for(NSImage *frame in frames)
+        {
+            Auto counts = SLTCountPixels(frame);
+            if(color == SLTMenuBarIconColorWhite)
+            {
+                XCTAssertEqual(counts.white, first.white, @"The white body must not change between frames.");
+                XCTAssertEqual(counts.black, 0u);
+            }
+            else
+            {
+                XCTAssertEqual(counts.black, first.black, @"The dark body must not change between frames.");
+                XCTAssertEqual(counts.white, 0u);
+            }
+        }
+        XCTAssertGreaterThan(color == SLTMenuBarIconColorWhite ? first.white : first.black, 500u);
+    }
+}
+
+- (void)testPulseFramesChangeTheScreenBrightnessSmoothly
+{
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
+    Auto brightest = SLTCountPixels(frames[0]).alphaSum;      // the cycle starts at full strength
+    Auto dimmest = SLTCountPixels(frames[8]).alphaSum;        // and is at its weakest half way
+    XCTAssertGreaterThan(brightest, dimmest * 1.05, @"The screen must get clearly dimmer and brighter.");
+
+    // A smooth cosine over 16 frames moves at most sin(pi/16), about 0.2, of the full swing per step.
+    // A jump would be about half the swing. The wrap from the last frame to the first counts too.
+    Auto swing = brightest - dimmest;
+    for(NSUInteger index = 0; index < frames.count; index++)
+    {
+        Auto current = SLTCountPixels(frames[index]).alphaSum;
+        Auto next = SLTCountPixels(frames[(index + 1) % frames.count]).alphaSum;
+        XCTAssertLessThan(fabs(current - next), swing * 0.25, @"Frame %lu and the next one differ too much", (unsigned long)index);
+    }
+}
+
+- (void)testPulsingScreenUsesTheAccentColor
+{
+    Auto accent = [NSColor.controlAccentColor colorUsingColorSpace:NSColorSpace.deviceRGBColorSpace];
+    Auto spread = MAX(MAX(accent.redComponent, accent.greenComponent), accent.blueComponent) - MIN(MIN(accent.redComponent, accent.greenComponent), accent.blueComponent);
+    if(spread < 0.3)
+    {
+        XCTSkip(@"The macOS accent color is graphite, which has no color to look for.");
+    }
+
+    Auto counts = SLTCountPixels([NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite][0]);
+    XCTAssertGreaterThan(counts.colored, 200u, @"The screen should be drawn in the accent color.");
+}
+
+- (void)testFollowSystemBodyAdaptsToTheMenuBarAppearance
+{
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem];
+
+    __block SLTPixelCounts onDarkBar = {0, 0, 0, 0, 0, 0, 0};
+    [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{
+        onDarkBar = SLTCountPixels(frames[0]);
+    }];
+    __block SLTPixelCounts onLightBar = {0, 0, 0, 0, 0, 0, 0};
+    [[NSAppearance appearanceNamed:NSAppearanceNameAqua] performAsCurrentDrawingAppearance:^{
+        onLightBar = SLTCountPixels(frames[0]);
+    }];
+
+    XCTAssertGreaterThan(onDarkBar.lightBody, 500u, @"On a dark menu bar the body is light.");
+    XCTAssertEqual(onDarkBar.darkBody, 0u);
+    XCTAssertGreaterThan(onLightBar.darkBody, 500u, @"On a light menu bar the body is dark.");
+    XCTAssertEqual(onLightBar.lightBody, 0u);
+}
+
+- (void)testProviderOffersPulseFramesForTheBuiltInIconOnly
+{
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
+    XCTAssertEqual(SLTStatusItemImageProvider.standardProvider.activePulseFrames.count, SLTStatusItemPulseFrameCount);
+}
+
+- (void)testProviderCachesPulseFramesPerColor
+{
+    Auto provider = SLTStatusItemImageProvider.standardProvider;
+
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorWhite;
+    Auto white = provider.activePulseFrames;
+    XCTAssertTrue(white == provider.activePulseFrames, @"The frames must not be rebuilt on every tick.");
+
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorDark;
+    XCTAssertTrue(white != provider.activePulseFrames);
 }
 
 @end

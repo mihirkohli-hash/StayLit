@@ -34,6 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// An icon image representing the inactive state.
 @property (nonatomic, readonly) NSImage *inactiveIconImage;
 
+/// The images of one pulse cycle for the active state, or nil if the icon cannot pulse.
+///
+/// Only the built-in icon has a separate screen. A custom icon has no frames, and
+/// the status item fades the whole icon instead.
+@property (nonatomic, readonly, nullable) NSArray<NSImage *> *activePulseFrames;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
