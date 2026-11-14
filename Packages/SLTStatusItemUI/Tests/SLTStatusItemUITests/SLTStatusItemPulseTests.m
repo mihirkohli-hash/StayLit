@@ -10,6 +10,7 @@
 #import <SLTCommon/SLTCommon.h>
 #import <SLTApplicationSupport/SLTApplicationSupport.h>
 #import <SLTStatusItemUI/SLTStatusItemController.h>
+#import <SLTStatusItemUI/SLTStatusItemImageProvider.h>
 #import "../../Sources/SLTStatusItemUI/SLTStatusItemController+Private.h"
 
 // A layer that counts how often an animation is added.
@@ -140,47 +141,83 @@
 
 #pragma mark - Wiring
 
-- (void)spinRunLoop
+// Returns how many different images the button showed while the run loop ran.
+- (NSUInteger)distinctImagesShownBy:(NSButton *)button over:(NSTimeInterval)duration
 {
-    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+    Auto seen = [NSMutableSet<NSValue *> new];
+    Auto deadline = [NSDate dateWithTimeIntervalSinceNow:duration];
+    while(deadline.timeIntervalSinceNow > 0)
+    {
+        [seen addObject:[NSValue valueWithNonretainedObject:button.image]];
+        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.04]];
+    }
+    return seen.count;
 }
 
-- (void)testStatusItemPulsesOnlyWhileActiveAndWhenNotDisabled
+- (void)testStatusItemPulsesItsScreenOnlyWhileActiveAndWhenNotDisabled
 {
     [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
     Auto controller = [SLTStatusItemController new];
     Auto button = controller.systemStatusItem.button;
     if(button == nil) { XCTSkip(@"No menu bar is available in this session."); }
 
-    // Under Reduce Motion the status item must not pulse, so only assert the full behavior without it.
+    // Under Reduce Motion the status item must stay still, so only the quiet states are asserted then.
     Auto reduceMotion = NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion;
 
     controller.appearance = SLTStatusItemAppearanceInactive;
-    XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"An inactive icon must be still.");
+    XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"An inactive icon must be still.");
 
     controller.appearance = SLTStatusItemAppearanceActive;
     if(reduceMotion)
     {
-        XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"Reduce Motion is on.");
+        XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"Reduce Motion is on.");
     }
     else
     {
-        XCTAssertNotNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"An active icon pulses.");
+        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.6], 4u, @"An active icon cycles through the pulse frames.");
+        XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"The body must not fade. Only the screen pulses.");
 
         // Turning the setting off must stop a pulse that is already running.
         NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = YES;
-        [self spinRunLoop];
-        XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"The setting stops the pulse at once.");
+        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+        XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"The setting stops the pulse at once.");
+        XCTAssertTrue(button.image == SLTStatusItemImageProvider.currentProvider.activeIconImage, @"A stopped pulse shows the steady active icon.");
 
         NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = NO;
-        [self spinRunLoop];
-        XCTAssertNotNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"Turning it back on resumes the pulse.");
+        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.6], 4u, @"Turning it back on resumes the pulse.");
     }
 
     controller.appearance = SLTStatusItemAppearanceInactive;
-    XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"Deactivating stops the pulse.");
+    XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"Deactivating stops the pulse.");
+    XCTAssertTrue(button.image == SLTStatusItemImageProvider.currentProvider.inactiveIconImage, @"Deactivating shows the inactive icon.");
 
     [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
+}
+
+- (void)testPulseSurvivesAnIconColorChangeWhileRunning
+{
+    Auto previousColor = [NSUserDefaults.standardUserDefaults objectForKey:SLTUserDefaultsKeyMenuBarIconColor];
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorWhite;
+
+    Auto controller = [SLTStatusItemController new];
+    Auto button = controller.systemStatusItem.button;
+    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
+
+    controller.appearance = SLTStatusItemAppearanceActive;
+    Auto whiteFrames = SLTStatusItemImageProvider.currentProvider.activePulseFrames;
+
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorDark;
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.4]];
+
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.6], 4u, @"The pulse keeps running after the color changes.");
+    XCTAssertFalse([whiteFrames containsObject:button.image], @"The pulse now shows frames of the new color.");
+
+    controller.appearance = SLTStatusItemAppearanceInactive;
+    [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
+    if(previousColor) { [NSUserDefaults.standardUserDefaults setObject:previousColor forKey:SLTUserDefaultsKeyMenuBarIconColor]; }
+    else { [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor]; }
 }
 
 @end

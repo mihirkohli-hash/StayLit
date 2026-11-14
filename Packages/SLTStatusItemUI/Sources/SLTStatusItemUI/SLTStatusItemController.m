@@ -16,6 +16,8 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 @interface SLTStatusItemController ()
 @property (nonatomic, readwrite) NSStatusItem *systemStatusItem;
 @property (nonatomic) SLTStatusItemAppearance currentAppearance;
+@property (nonatomic, nullable) NSTimer *pulseTimer;
+@property (nonatomic) NSUInteger pulseFrameIndex;
 @end
 
 @implementation SLTStatusItemController
@@ -44,6 +46,7 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 
 - (void)dealloc
 {
+    [self.pulseTimer invalidate];
     [NSNotificationCenter.defaultCenter removeObserver:self name:NSUserDefaultsDidChangeNotification object:nil];
     [NSWorkspace.sharedWorkspace.notificationCenter removeObserver:self name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:nil];
 }
@@ -140,6 +143,12 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
     Auto imageProvider = SLTStatusItemImageProvider.currentProvider;
     Auto image = (self.currentAppearance == SLTStatusItemAppearanceActive) ? imageProvider.activeIconImage : imageProvider.inactiveIconImage;
 
+    // While the screen pulses, the timer sets the frames, so do not fight it.
+    if(self.pulseTimer != nil)
+    {
+        return;
+    }
+
     // The provider returns the same instance until the color changes, so most calls do nothing.
     if(button.image != image)
     {
@@ -194,7 +203,63 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
     Auto shouldPulse = [SLTStatusItemController shouldPulseForAppearance:self.currentAppearance
                                                            pulseDisabled:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled
                                                             reduceMotion:NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion];
-    [SLTStatusItemController setPulsing:shouldPulse forView:button];
+
+    // The built-in icon pulses its screen. A custom icon has no separate screen, so it fades as a whole.
+    Auto canPulseScreen = SLTStatusItemImageProvider.currentProvider.activePulseFrames != nil;
+    if(shouldPulse && canPulseScreen)
+    {
+        [SLTStatusItemController setPulsing:NO forView:button];
+        [self startScreenPulse];
+    }
+    else
+    {
+        [self stopScreenPulse];
+        [SLTStatusItemController setPulsing:shouldPulse forView:button];
+    }
+}
+
+- (void)startScreenPulse
+{
+    if(self.pulseTimer != nil)
+    {
+        return;
+    }
+
+    AutoWeak weakSelf = self;
+    Auto timer = [NSTimer timerWithTimeInterval:0.1 repeats:YES block:^(NSTimer *timer) {
+        [weakSelf showNextPulseFrame];
+    }];
+    timer.tolerance = 0.03;
+
+    // Common modes keep the pulse running while a menu is open.
+    [NSRunLoop.mainRunLoop addTimer:timer forMode:NSRunLoopCommonModes];
+    self.pulseTimer = timer;
+    [self showNextPulseFrame];
+}
+
+- (void)stopScreenPulse
+{
+    if(self.pulseTimer == nil)
+    {
+        return;
+    }
+
+    [self.pulseTimer invalidate];
+    self.pulseTimer = nil;
+    self.pulseFrameIndex = 0;
+    [self updateButtonImage];
+}
+
+- (void)showNextPulseFrame
+{
+    Auto frames = SLTStatusItemImageProvider.currentProvider.activePulseFrames;
+    if(frames.count == 0)
+    {
+        return;
+    }
+
+    self.systemStatusItem.button.image = frames[self.pulseFrameIndex % frames.count];
+    self.pulseFrameIndex = (self.pulseFrameIndex + 1) % frames.count;
 }
 
 #pragma mark - Menu
