@@ -2,7 +2,6 @@
 //  SLTAppDelegate.h
 //  StayLit Launcher
 //
-//
 
 #import <Cocoa/Cocoa.h>
 

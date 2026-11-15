@@ -2,7 +2,6 @@
 //  SLTAppDelegate.m
 //  StayLit
 //
-//
 
 #import "SLTAppDelegate.h"
 #import <SLTCommon/SLTCommon.h>

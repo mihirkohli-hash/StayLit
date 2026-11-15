@@ -2,7 +2,6 @@
 //  SLTDisplayParameters.h
 //  SLTApplicationSupport
 //
-//
 
 #import <Cocoa/Cocoa.h>
 

@@ -2,7 +2,6 @@
 //  SLTMainMenu.m
 //  StayLit
 //
-//
 
 #import "SLTMainMenu.h"
 #import <SLTCommon/SLTCommon.h>

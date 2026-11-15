@@ -2,7 +2,6 @@
 //  SLTGeneralSettingsViewController.m
 //  StayLit
 //
-//
 
 #import "SLTGeneralSettingsViewController.h"
 #import <SLTCommon/SLTCommon.h>

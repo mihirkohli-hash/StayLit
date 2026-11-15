@@ -2,7 +2,6 @@
 //  SLTLowPowerModeMonitor.h
 //  SLTDeviceInfo
 //
-//
 
 #import <Foundation/Foundation.h>
 

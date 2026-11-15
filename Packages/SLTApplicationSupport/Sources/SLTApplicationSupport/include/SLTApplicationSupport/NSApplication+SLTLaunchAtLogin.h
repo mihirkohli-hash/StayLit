@@ -2,7 +2,6 @@
 //  NSApplication+SLTLaunchAtLogin.h
 //  SLTApplicationSupport
 //
-//
 
 #import <Cocoa/Cocoa.h>
 

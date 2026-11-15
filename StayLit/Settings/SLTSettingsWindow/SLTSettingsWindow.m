@@ -2,7 +2,6 @@
 //  SLTSettingsWindow.m
 //  StayLit
 //
-//
 
 #import "SLTSettingsWindow.h"
 #import <SLTCommon/SLTCommon.h>

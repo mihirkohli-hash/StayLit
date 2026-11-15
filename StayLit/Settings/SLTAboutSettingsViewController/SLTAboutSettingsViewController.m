@@ -2,7 +2,6 @@
 //  SLTAboutSettingsViewController.m
 //  StayLit
 //
-//
 
 #import "SLTAboutSettingsViewController.h"
 #import "SLTLocalizedStrings.h"

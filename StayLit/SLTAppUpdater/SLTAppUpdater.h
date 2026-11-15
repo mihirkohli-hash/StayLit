@@ -2,7 +2,6 @@
 //  SLTAppUpdater.h
 //  StayLit
 //
-//
 
 #import <Foundation/Foundation.h>
 

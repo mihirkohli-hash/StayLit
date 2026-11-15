@@ -2,7 +2,6 @@
 //  SLTDisplayParameters.m
 //  SLTApplicationSupport
 //
-//
 
 #import <SLTApplicationSupport/SLTDisplayParameters.h>
 #import <SLTCommon/SLTCommon.h>

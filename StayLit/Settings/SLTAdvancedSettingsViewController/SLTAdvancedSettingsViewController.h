@@ -2,7 +2,6 @@
 //  SLTAdvancedSettingsViewController.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 #import <SLTApplicationSupport/SLTApplicationSupport.h>

@@ -2,7 +2,6 @@
 //  SLTEvent.m
 //  SLTApplicationEvents
 //
-//
 
 #import <SLTApplicationEvents/SLTEvent.h>
 

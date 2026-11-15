@@ -2,7 +2,6 @@
 //  SLTBatterySettingsViewController.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 #import <SLTDeviceInfo/SLTDeviceInfo.h>

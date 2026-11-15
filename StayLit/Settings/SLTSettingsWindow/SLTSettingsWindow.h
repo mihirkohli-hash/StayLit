@@ -2,7 +2,6 @@
 //  SLTSettingsWindow.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 

@@ -2,7 +2,6 @@
 //  SLTUpdateSettingsViewController.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 #import "SLTAppUpdater.h"

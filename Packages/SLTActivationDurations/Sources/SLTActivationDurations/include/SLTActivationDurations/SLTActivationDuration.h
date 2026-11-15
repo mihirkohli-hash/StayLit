@@ -2,7 +2,6 @@
 //  SLTActivationDuration.h
 //  SLTActivationDurations
 //
-//
 
 #import <Foundation/Foundation.h>
 #import <SLTCommon/SLTExport.h>

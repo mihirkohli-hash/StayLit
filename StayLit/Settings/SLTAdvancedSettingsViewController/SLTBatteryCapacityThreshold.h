@@ -2,7 +2,6 @@
 //  SLTBatteryCapacityThreshold.h
 //  StayLit
 //
-//
 
 #import <Foundation/Foundation.h>
 

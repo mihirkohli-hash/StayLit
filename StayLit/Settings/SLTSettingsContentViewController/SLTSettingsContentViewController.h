@@ -2,7 +2,6 @@
 //  SLTSettingsContentViewController.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 #import "SLTSettingsLocalizedStrings.h"

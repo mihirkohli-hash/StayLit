@@ -2,7 +2,6 @@
 //  NSUserDefaults+SLTKeys.m
 //  SLTApplicationSupport
 //
-//
 
 #import <SLTApplicationSupport/NSUserDefaults+SLTKeys.h>
 #import <SLTCommon/SLTCommon.h>

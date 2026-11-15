@@ -2,7 +2,6 @@
 //  SLTActivationDuration.mm
 //  SLTActivationDurations
 //
-//
 
 #import <SLTActivationDurations/SLTActivationDuration.h>
 #import <SLTCommon/SLTCommon.h>

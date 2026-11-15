@@ -2,7 +2,6 @@
 //  SLTBatteryMonitor.h
 //  SLTDeviceInfo
 //
-//
 
 #import <Foundation/Foundation.h>
 #import <SLTCommon/SLTExport.h>

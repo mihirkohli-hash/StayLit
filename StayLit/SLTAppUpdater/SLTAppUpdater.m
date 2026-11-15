@@ -2,7 +2,6 @@
 //  SLTAppUpdater.m
 //  StayLit
 //
-//
 
 #import "SLTAppUpdater.h"
 #import <SLTCommon/SLTCommon.h>

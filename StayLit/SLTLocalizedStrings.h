@@ -2,7 +2,6 @@
 //  SLTLocalizedStrings.h
 //  StayLit
 //
-//
 
 #pragma once
 

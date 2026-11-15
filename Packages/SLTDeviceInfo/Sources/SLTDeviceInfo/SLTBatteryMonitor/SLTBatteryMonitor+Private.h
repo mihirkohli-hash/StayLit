@@ -2,7 +2,6 @@
 //  SLTBatteryMonitor+Private.h
 //  SLTDeviceInfo
 //
-//
 
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>

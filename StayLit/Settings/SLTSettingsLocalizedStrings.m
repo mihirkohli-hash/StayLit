@@ -2,7 +2,6 @@
 //  SLTSettingsLocalizedStrings.m
 //  StayLit
 //
-//
 
 #import <Foundation/Foundation.h>
 

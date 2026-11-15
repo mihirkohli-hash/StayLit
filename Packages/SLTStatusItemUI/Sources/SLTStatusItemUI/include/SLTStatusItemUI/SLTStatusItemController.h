@@ -2,7 +2,6 @@
 //  SLTStatusItemController.h
 //  SLTStatusItemUI
 //
-//
 
 #import <Cocoa/Cocoa.h>
 #import <SLTApplicationSupport/SLTApplicationSupport.h>

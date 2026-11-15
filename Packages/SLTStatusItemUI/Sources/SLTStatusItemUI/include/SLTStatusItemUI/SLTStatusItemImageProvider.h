@@ -2,7 +2,6 @@
 //  SLTStatusItemImageProvider.h
 //  SLTStatusItemUI
 //
-//
 
 #import <Foundation/Foundation.h>
 #import <AppKit/NSImage.h>

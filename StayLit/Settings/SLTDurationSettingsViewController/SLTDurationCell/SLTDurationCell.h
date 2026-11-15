@@ -2,7 +2,6 @@
 //  SLTDurationCell.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 

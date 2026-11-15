@@ -2,7 +2,6 @@
 //  SLTDevice.m
 //  SLTDeviceInfo
 //
-//
 
 #import <SLTDeviceInfo/SLTDevice.h>
 #import <SLTCommon/SLTCommon.h>

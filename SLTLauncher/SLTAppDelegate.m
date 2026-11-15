@@ -2,7 +2,6 @@
 //  SLTAppDelegate.m
 //  StayLit Launcher
 //
-//
 
 #import "SLTAppDelegate.h"
 

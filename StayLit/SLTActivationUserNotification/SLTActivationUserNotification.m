@@ -2,7 +2,6 @@
 //  SLTActivationUserNotification.m
 //  StayLit
 //
-//
 
 #import "SLTActivationUserNotification.h"
 #import <SLTCommon/SLTCommon.h>

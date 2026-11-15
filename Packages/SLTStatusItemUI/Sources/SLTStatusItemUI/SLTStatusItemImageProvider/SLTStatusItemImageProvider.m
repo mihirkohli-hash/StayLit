@@ -2,7 +2,6 @@
 //  SLTStatusItemImageProvider.m
 //  SLTStatusItemUI
 //
-//
 
 #import "SLTStatusItemImageProvider+Private.h"
 #import <SLTCommon/SLTCommon.h>

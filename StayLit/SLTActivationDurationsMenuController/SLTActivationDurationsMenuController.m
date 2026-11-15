@@ -2,7 +2,6 @@
 //  SLTActivationDurationsMenuController.m
 //  StayLit
 //
-//
 
 #import "SLTActivationDurationsMenuController.h"
 #import <SLTCommon/SLTCommon.h>

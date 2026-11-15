@@ -2,7 +2,6 @@
 //  SLTActivationDuration+SLTLocalizedTitle.h
 //  StayLit
 //
-//
 
 #import <Foundation/Foundation.h>
 #import <SLTActivationDurations/SLTActivationDurations.h>

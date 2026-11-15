@@ -2,7 +2,6 @@
 //  SLTSleepWakeTimer.h
 //  StayLit
 //
-//
 
 #import <Foundation/Foundation.h>
 #import <SLTApplicationSupport/SLTApplicationSupport.h>

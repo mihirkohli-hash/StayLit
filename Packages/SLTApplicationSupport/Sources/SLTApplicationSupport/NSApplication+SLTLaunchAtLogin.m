@@ -2,7 +2,6 @@
 //  NSApplication+SLTLaunchAtLogin.m
 //  SLTApplicationSupport
 //
-//
 
 #import <SLTApplicationSupport/NSApplication+SLTLaunchAtLogin.h>
 #import <ServiceManagement/ServiceManagement.h>

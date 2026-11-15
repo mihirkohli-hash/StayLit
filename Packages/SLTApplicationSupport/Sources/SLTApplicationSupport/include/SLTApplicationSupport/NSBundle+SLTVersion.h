@@ -2,7 +2,6 @@
 //  NSBundle+SLTVersion.h
 //  SLTApplicationSupport
 //
-//
 
 #import <Foundation/Foundation.h>
 

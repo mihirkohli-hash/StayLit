@@ -2,7 +2,6 @@
 //  SLTDurationSettingsViewController.m
 //  StayLit
 //
-//
 
 #import "SLTDurationSettingsViewController.h"
 #import <SLTCommon/SLTCommon.h>

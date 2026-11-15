@@ -2,7 +2,6 @@
 //  main.m
 //  StayLit Launcher
 //
-//
 
 #import <Cocoa/Cocoa.h>
 

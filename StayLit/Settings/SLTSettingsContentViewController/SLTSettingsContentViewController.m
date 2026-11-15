@@ -2,7 +2,6 @@
 //  SLTSettingsContentViewController.m
 //  StayLit
 //
-//
 
 #import "SLTSettingsContentViewController.h"
 #import <SLTCommon/SLTCommon.h>

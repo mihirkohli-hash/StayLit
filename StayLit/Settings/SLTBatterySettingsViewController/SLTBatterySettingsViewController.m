@@ -2,7 +2,6 @@
 //  SLTBatterySettingsViewController.m
 //  StayLit
 //
-//
 
 #import "SLTBatterySettingsViewController.h"
 #import <SLTCommon/SLTCommon.h>

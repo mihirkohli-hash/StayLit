@@ -2,7 +2,6 @@
 //  SLTDurationCell.m
 //  StayLit
 //
-//
 
 #import "SLTDurationCell.h"
 #import <SLTCommon/SLTCommon.h>

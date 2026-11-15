@@ -2,7 +2,6 @@
 //  SLTActivationDuration+SLTLocalizedTitle.m
 //  StayLit
 //
-//
 
 #import "SLTActivationDuration+SLTLocalizedTitle.h"
 #import <SLTCommon/SLTCommon.h>

@@ -2,7 +2,6 @@
 //  SLTAddDurationViewController.m
 //  StayLit
 //
-//
 
 #import "SLTAddDurationViewController.h"
 #import <SLTCommon/SLTCommon.h>

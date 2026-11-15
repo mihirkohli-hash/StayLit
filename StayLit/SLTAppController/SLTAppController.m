@@ -2,7 +2,6 @@
 //  SLTAppController.m
 //  StayLit
 //
-//
 
 #import "SLTAppController.h"
 #import <SLTCommon/SLTCommon.h>

@@ -2,7 +2,6 @@
 //  NSBundle+SLTVersion.m
 //  SLTApplicationSupport
 //
-//
 
 #import <SLTApplicationSupport/NSBundle+SLTVersion.h>
 #import <SLTCommon/SLTCommon.h>

@@ -2,7 +2,6 @@
 //  NSDate+RemainingTime.h
 //  SLTUserNotifications
 //
-//
 
 #import <Foundation/Foundation.h>
 

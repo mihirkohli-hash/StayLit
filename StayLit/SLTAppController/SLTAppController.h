@@ -2,7 +2,6 @@
 //  SLTAppController.h
 //  StayLit
 //
-//
 
 #import <Cocoa/Cocoa.h>
 #import <SLTSleepWakeTimer/SLTSleepWakeTimer.h>

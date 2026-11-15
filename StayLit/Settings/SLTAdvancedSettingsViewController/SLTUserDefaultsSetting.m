@@ -2,7 +2,6 @@
 //  SLTUserDefaultsSetting.m
 //  StayLit
 //
-//
 
 #import "SLTUserDefaultsSetting.h"
 

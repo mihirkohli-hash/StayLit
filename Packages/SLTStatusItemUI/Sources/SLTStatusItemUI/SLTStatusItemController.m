@@ -2,7 +2,6 @@
 //  SLTStatusItemController.m
 //  SLTStatusItemUI
 //
-//
 
 #import <SLTStatusItemUI/SLTStatusItemController.h>
 #import <SLTCommon/SLTCommon.h>

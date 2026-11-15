@@ -2,7 +2,6 @@
 //  SLTBatteryMonitor.m
 //  SLTDeviceInfo
 //
-//
 
 #import "SLTBatteryMonitor+Private.h"
 #import <IOKit/ps/IOPowerSources.h>
