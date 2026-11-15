@@ -22,15 +22,22 @@ BOOL SLTCustomIconImageFilesExist(void);
 @property (class, copy, nonatomic, readonly) NSImage *slt_customActiveIconImage;
 @property (class, copy, nonatomic, readonly) NSImage *slt_customInactiveIconImage;
 
-/// The number of images in one pulse cycle.
-extern const NSUInteger SLTStatusItemPulseFrameCount;
+/// How many different images the pulse shows each second. A fade that changes this often looks smooth.
+extern const NSUInteger SLTStatusItemPulseFramesPerSecond;
+
+/// The number of images in one pulse cycle of the given length in seconds.
+///
+/// A longer cycle gets more images, so the pulse keeps the same smoothness at every speed.
+/// The count is limited, so a very short cycle still has enough steps and a very long one does not
+/// need a huge number of images.
+NSUInteger SLTStatusItemPulseFrameCountForDuration(NSTimeInterval duration);
 
 /// Returns the images of one pulse cycle for the built-in icon.
 ///
 /// The monitor body keeps the icon color. Only the screen changes: its color fades from the
 /// body color to the opposite color and back, so a white icon pulses black and a dark icon pulses white.
 /// The images are drawn on demand, so the body follows the menu bar appearance.
-+ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color;
++ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color frameCount:(NSUInteger)frameCount;
 
 /// Returns the template image drawn in the requested menu bar icon color.
 ///

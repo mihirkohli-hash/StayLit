@@ -209,28 +209,13 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 #pragma mark - Pulse frames
 
-- (void)testPulseFramesCoverOneFullCycle
-{
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
-    XCTAssertEqual(frames.count, SLTStatusItemPulseFrameCount);
-    XCTAssertEqual(frames.count, 16u);
-
-    Auto iconSize = NSImage.slt_defaultActiveIconImage.size;
-    for(NSImage *frame in frames)
-    {
-        XCTAssertFalse(frame.isTemplate, @"A colored screen cannot be a template image.");
-        XCTAssertEqual(frame.size.width, iconSize.width);
-        XCTAssertEqual(frame.size.height, iconSize.height);
-    }
-}
-
 - (void)testPulseKeepsTheMonitorBodySteadyInEveryColor
 {
     // Only the screen may change. The body is the opaque part in the icon color, so its pixel count must not move.
     for(NSNumber *colorValue in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
     {
         Auto color = (SLTMenuBarIconColor)colorValue.integerValue;
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:color];
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:color frameCount:16];
         Auto first = SLTCountPixels(frames.firstObject);
 
         for(NSImage *frame in frames)
@@ -256,7 +241,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 {
     // The screen is opaque and its color moves from the body color to the pulse color, so the
     // total brightness is the signal. Full strength is the accent color, and the weakest frame is nearly white.
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite frameCount:16];
     Auto strongest = SLTCountPixels(frames[0]).lumaSum;
     Auto weakest = SLTCountPixels(frames[8]).lumaSum;
     Auto swing = fabs(weakest - strongest);
@@ -279,7 +264,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     // A fading screen would have thousands of such pixels, because its whole area would be.
     for(NSNumber *iconColor in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
     {
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue];
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue frameCount:16];
         for(NSImage *frame in frames)
         {
             Auto counts = SLTCountPixels(frame);
@@ -291,7 +276,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 - (void)testFollowSystemBodyAdaptsToTheMenuBarAppearance
 {
     // Frame 6 has a mid-gray screen, so only the body counts as light or dark here.
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem frameCount:16];
 
     __block SLTPixelCounts onDarkBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{
@@ -311,7 +296,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 - (void)testProviderOffersPulseFramesForTheBuiltInIconOnly
 {
     [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
-    XCTAssertEqual(SLTStatusItemImageProvider.standardProvider.activePulseFrames.count, SLTStatusItemPulseFrameCount);
+    XCTAssertEqual([SLTStatusItemImageProvider.standardProvider pulseFramesForDuration:2.0].count, SLTStatusItemPulseFrameCountForDuration(2.0));
 }
 
 - (void)testProviderCachesPulseFramesPerColor
@@ -319,11 +304,11 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     Auto provider = SLTStatusItemImageProvider.standardProvider;
 
     NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorWhite;
-    Auto white = provider.activePulseFrames;
-    XCTAssertTrue(white == provider.activePulseFrames, @"The frames must not be rebuilt on every tick.");
+    Auto white = [provider pulseFramesForDuration:2.0];
+    XCTAssertTrue(white == [provider pulseFramesForDuration:2.0], @"The frames must not be rebuilt on every tick.");
 
     NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorDark;
-    XCTAssertTrue(white != provider.activePulseFrames);
+    XCTAssertTrue(white != [provider pulseFramesForDuration:2.0]);
 }
 
 #pragma mark - Pulse colors
@@ -332,7 +317,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testContrastPulseIsBlackOnAWhiteIcon
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite frameCount:16];
     Auto counts = SLTCountPixels(frames[0]); // the screen at full strength
     XCTAssertGreaterThan(counts.white, 500u, @"The body stays white.");
     XCTAssertGreaterThan(counts.black, 200u, @"The screen is black.");
@@ -341,7 +326,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testContrastPulseIsWhiteOnADarkIcon
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorDark];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorDark frameCount:16];
     Auto counts = SLTCountPixels(frames[0]);
     XCTAssertGreaterThan(counts.black, 500u, @"The body stays black.");
     XCTAssertGreaterThan(counts.white, 200u, @"The screen is white.");
@@ -350,7 +335,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testContrastPulseWithFollowSystemIsTheOppositeOfTheMenuBarText
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem frameCount:16];
 
     __block SLTPixelCounts onDarkBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{ onDarkBar = SLTCountPixels(frames[0]); }];
@@ -367,7 +352,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 {
     for(NSNumber *iconColor in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
     {
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue];
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue frameCount:16];
         Auto strongest = SLTCountPixels(frames[0]);
         Auto weakest = SLTCountPixels(frames[8]);
         XCTAssertGreaterThan(fabs(strongest.lumaSum - weakest.lumaSum), 150.0, @"The screen must fade clearly for icon color %@", iconColor);
@@ -381,12 +366,79 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
 
     // With nothing stored the icon is white, so the pulse must be black.
-    Auto counts = SLTCountPixels(SLTStatusItemImageProvider.standardProvider.activePulseFrames[0]);
+    Auto counts = SLTCountPixels([SLTStatusItemImageProvider.standardProvider pulseFramesForDuration:2.0][0]);
     XCTAssertGreaterThan(counts.white, 500u);
     XCTAssertGreaterThan(counts.black, 200u);
     XCTAssertEqual(counts.colored, 0u);
 
     if(previousIconColor) { [defaults setObject:previousIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor]; }
+}
+
+#pragma mark - Smooth pulse
+
+- (void)testFrameCountGrowsWithTheDurationAtTwentyFramesPerSecond
+{
+    XCTAssertEqual(SLTStatusItemPulseFramesPerSecond, 20u);
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(0.5), 10u);
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(1.0), 20u);
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(2.0), 40u, @"The default of two seconds has forty steps.");
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(3.0), 60u);
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(5.0), 100u);
+}
+
+- (void)testFrameCountIsLimitedForVeryShortAndVeryLongDurations
+{
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(0.25), 8u, @"Even a very short pulse needs enough steps to look smooth.");
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(0.01), 8u);
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(10.0), 200u);
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(1000.0), 200u, @"A huge duration must not create a huge number of images.");
+    XCTAssertEqual(SLTStatusItemPulseFrameCountForDuration(0.0), 8u);
+}
+
+- (void)testDefaultPulseHasOneFramePerStepAndNeverJumps
+{
+    // At the default of two seconds the pulse has 40 steps. A smooth cosine moves at most
+    // sin(pi/40), about 8 percent, of the full swing per step, so no step is a visible jump.
+    Auto count = SLTStatusItemPulseFrameCountForDuration(SLTDefaultMenuBarIconPulseDuration);
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite frameCount:count];
+    XCTAssertEqual(frames.count, 40u);
+
+    Auto swing = fabs(SLTCountPixels(frames[count / 2]).lumaSum - SLTCountPixels(frames[0]).lumaSum);
+    XCTAssertGreaterThan(swing, 100.0);
+    for(NSUInteger index = 0; index < frames.count; index++)
+    {
+        Auto current = SLTCountPixels(frames[index]).lumaSum;
+        Auto next = SLTCountPixels(frames[(index + 1) % frames.count]).lumaSum;
+        XCTAssertLessThan(fabs(current - next), swing * 0.1, @"Step %lu is too large for a smooth fade", (unsigned long)index);
+    }
+}
+
+- (void)testMoreFramesMakeSmallerSteps
+{
+    Auto coarse = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite frameCount:16];
+    Auto smooth = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite frameCount:40];
+
+    Auto largestStep = ^double(NSArray<NSImage *> *frames) {
+        double largest = 0;
+        for(NSUInteger index = 0; index < frames.count; index++)
+        {
+            Auto step = fabs(SLTCountPixels(frames[index]).lumaSum - SLTCountPixels(frames[(index + 1) % frames.count]).lumaSum);
+            largest = MAX(largest, step);
+        }
+        return largest;
+    };
+    XCTAssertLessThan(largestStep(smooth), largestStep(coarse) * 0.6, @"Forty steps must be clearly smoother than sixteen.");
+}
+
+- (void)testProviderMakesFramesForEachDurationAndKeepsThemApart
+{
+    Auto provider = SLTStatusItemImageProvider.standardProvider;
+    Auto twoSeconds = [provider pulseFramesForDuration:2.0];
+    Auto threeSeconds = [provider pulseFramesForDuration:3.0];
+    XCTAssertEqual(twoSeconds.count, 40u);
+    XCTAssertEqual(threeSeconds.count, 60u);
+    XCTAssertTrue(twoSeconds == [provider pulseFramesForDuration:2.0], @"Each duration keeps its own cached frames.");
+    XCTAssertTrue(threeSeconds == [provider pulseFramesForDuration:3.0]);
 }
 
 @end

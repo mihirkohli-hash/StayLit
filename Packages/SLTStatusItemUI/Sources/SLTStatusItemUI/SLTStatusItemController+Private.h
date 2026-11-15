@@ -14,11 +14,15 @@ extern NSString * const SLTStatusItemPulseAnimationKey;
 
 @interface SLTStatusItemController ()
 
-/// Returns YES if the icon should pulse. Only an active icon pulses, and never
-/// when the user turned it off or asked macOS to reduce motion.
+/// Returns YES if the icon should pulse. Only an active icon pulses, and never when the user
+/// turned it off, asked macOS to reduce motion, or when the displays are asleep and nobody sees it.
 + (BOOL)shouldPulseForAppearance:(SLTStatusItemAppearance)appearance
                    pulseDisabled:(BOOL)pulseDisabled
-                    reduceMotion:(BOOL)reduceMotion;
+                    reduceMotion:(BOOL)reduceMotion
+                    screensAsleep:(BOOL)screensAsleep;
+
+/// YES between the displays going to sleep and waking up, for example with the lid closed.
+@property (nonatomic) BOOL screensAsleep;
 
 /// Starts or stops the fade of a whole view. This is for custom icons, which have no separate screen.
 ///

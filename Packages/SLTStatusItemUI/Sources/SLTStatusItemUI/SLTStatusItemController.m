@@ -8,6 +8,7 @@
 #import <SLTStatusItemUI/SLTStatusItemImageProvider.h>
 #import <QuartzCore/QuartzCore.h>
 #import "SLTStatusItemController+Private.h"
+#import "SLTStatusItemImageProvider/NSImage+SLTStatusItemImage.h"
 #import "SLTStatusItemUILocalizedStrings.h"
 
 NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
@@ -33,6 +34,12 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
                                                    name:NSUserDefaultsDidChangeNotification
                                                  object:nil];
 
+        // Nobody sees the menu bar while the displays sleep, for example with the lid closed on battery.
+        // The pulse stops then, so it does not wake the Mac 20 times a second for nothing.
+        Auto workspaceCenter = NSWorkspace.sharedWorkspace.notificationCenter;
+        [workspaceCenter addObserver:self selector:@selector(screensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
+        [workspaceCenter addObserver:self selector:@selector(screensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
+
         // Reduce Motion is a system setting, so the pulse must follow it live.
         [NSWorkspace.sharedWorkspace.notificationCenter addObserver:self
                                                            selector:@selector(userDefaultsDidChange:)
@@ -47,6 +54,20 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
     [self.pulseTimer invalidate];
     [NSNotificationCenter.defaultCenter removeObserver:self name:NSUserDefaultsDidChangeNotification object:nil];
     [NSWorkspace.sharedWorkspace.notificationCenter removeObserver:self name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:nil];
+    [NSWorkspace.sharedWorkspace.notificationCenter removeObserver:self name:NSWorkspaceScreensDidSleepNotification object:nil];
+    [NSWorkspace.sharedWorkspace.notificationCenter removeObserver:self name:NSWorkspaceScreensDidWakeNotification object:nil];
+}
+
+- (void)screensDidSleep:(NSNotification *)notification
+{
+    self.screensAsleep = YES;
+    [self updateButtonPulse];
+}
+
+- (void)screensDidWake:(NSNotification *)notification
+{
+    self.screensAsleep = NO;
+    [self updateButtonPulse];
 }
 
 - (void)userDefaultsDidChange:(NSNotification *)notification
@@ -159,8 +180,9 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 + (BOOL)shouldPulseForAppearance:(SLTStatusItemAppearance)appearance
                    pulseDisabled:(BOOL)pulseDisabled
                     reduceMotion:(BOOL)reduceMotion
+                    screensAsleep:(BOOL)screensAsleep
 {
-    return appearance == SLTStatusItemAppearanceActive && !pulseDisabled && !reduceMotion;
+    return appearance == SLTStatusItemAppearanceActive && !pulseDisabled && !reduceMotion && !screensAsleep;
 }
 
 + (void)setPulsing:(BOOL)pulsing forView:(NSView *)view duration:(NSTimeInterval)duration
@@ -203,12 +225,13 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 
     Auto shouldPulse = [SLTStatusItemController shouldPulseForAppearance:self.currentAppearance
                                                            pulseDisabled:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled
-                                                            reduceMotion:NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion];
+                                                            reduceMotion:NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion
+                                                           screensAsleep:self.screensAsleep];
 
     Auto duration = NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration;
 
     // The built-in icon pulses its screen. A custom icon has no separate screen, so it fades as a whole.
-    Auto canPulseScreen = SLTStatusItemImageProvider.currentProvider.activePulseFrames != nil;
+    Auto canPulseScreen = [SLTStatusItemImageProvider.currentProvider pulseFramesForDuration:duration] != nil;
     if(shouldPulse && canPulseScreen)
     {
         [SLTStatusItemController setPulsing:NO forView:button duration:duration];
@@ -224,12 +247,13 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 - (void)startScreenPulseWithDuration:(NSTimeInterval)duration
 {
     // One cycle shows every frame once, so a frame lasts one frame's share of the duration.
-    Auto frameCount = SLTStatusItemImageProvider.currentProvider.activePulseFrames.count;
-    Auto interval = duration / (NSTimeInterval)MAX(frameCount, 1u);
+    Auto frameCount = SLTStatusItemPulseFrameCountForDuration(duration);
+    Auto interval = duration / (NSTimeInterval)frameCount;
 
     if(self.pulseTimer != nil)
     {
-        // The same speed keeps running. A new speed replaces the timer, and the frames carry on from where they were.
+        // The same step keeps running. Frames are read on every tick, so a new duration takes effect at once.
+        // Only a different step needs a new timer.
         if(fabs(self.pulseTimer.timeInterval - interval) < 0.0001)
         {
             return;
@@ -265,7 +289,7 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 
 - (void)showNextPulseFrame
 {
-    Auto frames = SLTStatusItemImageProvider.currentProvider.activePulseFrames;
+    Auto frames = [SLTStatusItemImageProvider.currentProvider pulseFramesForDuration:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration];
     if(frames.count == 0)
     {
         return;

@@ -86,7 +86,7 @@
     return [self coloredImageForBaseImage:self.baseInactiveIconImage cache:self.inactiveIconCache];
 }
 
-- (NSArray<NSImage *> *)activePulseFrames
+- (NSArray<NSImage *> *)pulseFramesForDuration:(NSTimeInterval)duration
 {
     if(!self.usesBuiltInIcons)
     {
@@ -94,14 +94,18 @@
     }
 
     Auto color = NSUserDefaults.standardUserDefaults.slt_menuBarIconColor;
-    Auto cachedFrames = self.pulseFramesCache[@(color)];
+    Auto frameCount = SLTStatusItemPulseFrameCountForDuration(duration);
+
+    // The frames depend on the icon color and on how many there are, so the cache key holds both.
+    Auto cacheKey = @(color * 1000 + (NSInteger)frameCount);
+    Auto cachedFrames = self.pulseFramesCache[cacheKey];
     if(cachedFrames != nil)
     {
         return cachedFrames;
     }
 
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:color];
-    self.pulseFramesCache[@(color)] = frames;
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:color frameCount:frameCount];
+    self.pulseFramesCache[cacheKey] = frames;
     return frames;
 }
 

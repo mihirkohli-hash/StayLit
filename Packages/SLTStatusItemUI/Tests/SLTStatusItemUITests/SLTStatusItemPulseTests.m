@@ -12,6 +12,7 @@
 #import <SLTStatusItemUI/SLTStatusItemController.h>
 #import <SLTStatusItemUI/SLTStatusItemImageProvider.h>
 #import "../../Sources/SLTStatusItemUI/SLTStatusItemController+Private.h"
+#import "../../Sources/SLTStatusItemUI/SLTStatusItemImageProvider/NSImage+SLTStatusItemImage.h"
 
 // A layer that counts how often an animation is added.
 @interface SLTCountingLayer : CALayer
@@ -56,7 +57,7 @@
 
 - (void)testOnlyAnActiveIconPulsesWhenNothingStopsIt
 {
-    XCTAssertTrue([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:NO reduceMotion:NO]);
+    XCTAssertTrue([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:NO reduceMotion:NO screensAsleep:NO]);
 }
 
 - (void)testInactiveIconNeverPulses
@@ -67,20 +68,28 @@
         {
             XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceInactive
                                                                pulseDisabled:disabled.boolValue
-                                                                reduceMotion:reduceMotion.boolValue]);
+                                                                reduceMotion:reduceMotion.boolValue
+                                                               screensAsleep:NO]);
         }
     }
 }
 
 - (void)testPulseStopsWhenTheUserTurnedItOff
 {
-    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:YES reduceMotion:NO]);
+    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:YES reduceMotion:NO screensAsleep:NO]);
+}
+
+- (void)testPulseStopsWhileTheDisplaysAreAsleep
+{
+    // With the lid closed on battery nobody sees the menu bar, so a 20 times a second timer would only waste power.
+    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:NO reduceMotion:NO screensAsleep:YES]);
+    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceInactive pulseDisabled:NO reduceMotion:NO screensAsleep:YES]);
 }
 
 - (void)testPulseStopsWhenMacOSReducesMotion
 {
-    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:NO reduceMotion:YES]);
-    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:YES reduceMotion:YES]);
+    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:NO reduceMotion:YES screensAsleep:NO]);
+    XCTAssertFalse([SLTStatusItemController shouldPulseForAppearance:SLTStatusItemAppearanceActive pulseDisabled:YES reduceMotion:YES screensAsleep:NO]);
 }
 
 #pragma mark - Animation
@@ -216,7 +225,7 @@
     [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
 }
 
-- (void)testFrameTimerFollowsThePulseDuration
+- (void)testFrameTimerStepsTwentyTimesASecondAndTheCycleFollowsTheDuration
 {
     Auto previous = [NSUserDefaults.standardUserDefaults objectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
     [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
@@ -227,24 +236,56 @@
     if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
 
     controller.appearance = SLTStatusItemAppearanceActive;
-    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 2.0 / 16.0, 0.0001, @"The default is a two second cycle.");
+    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 2.0 / 40.0, 0.0001, @"The default is a two second cycle of 40 steps.");
+    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 1.0 / 20.0, 0.0001, @"A step lasts a twentieth of a second.");
 
-    // A shorter pulse steps faster, and the running pulse picks the new speed up at once.
+    // A different duration changes how many steps one cycle has, so the frames are smooth at every speed.
+    for(NSNumber *seconds in @[@0.5, @1.0, @3.0, @5.0])
+    {
+        NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = seconds.doubleValue;
+        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+        Auto count = SLTStatusItemPulseFrameCountForDuration(seconds.doubleValue);
+        XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval * (NSTimeInterval)count, seconds.doubleValue, 0.001, @"One cycle must last %@ seconds", seconds);
+    }
+
+    // The cycle really repeats after its frame count: a 0.5 second pulse has only 10 different images in a second.
     NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 0.5;
     [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 0.5 / 16.0, 0.0001);
-    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.8], 10u, @"A 0.5 second pulse goes through most frames in 0.8 seconds.");
-
-    NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 3.0;
+    XCTAssertLessThanOrEqual([self distinctImagesShownBy:button over:1.0], 10u);
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 5.0;
     [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 3.0 / 16.0, 0.0001);
-    XCTAssertLessThanOrEqual([self distinctImagesShownBy:button over:0.8], 7u, @"A 3 second pulse is much slower.");
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 14u, @"A 5 second pulse does not repeat within a second.");
 
     controller.appearance = SLTStatusItemAppearanceInactive;
     XCTAssertNil(controller.pulseTimer, @"Deactivating stops the timer, whatever the speed.");
     [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
     if(previous) { [NSUserDefaults.standardUserDefaults setObject:previous forKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds]; }
     else { [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds]; }
+}
+
+- (void)testPulsePausesWhileTheDisplaysSleepAndResumesWhenTheyWake
+{
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
+    Auto controller = [SLTStatusItemController new];
+    Auto button = controller.systemStatusItem.button;
+    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
+
+    controller.appearance = SLTStatusItemAppearanceActive;
+    XCTAssertNotNil(controller.pulseTimer);
+
+    Auto center = NSWorkspace.sharedWorkspace.notificationCenter;
+    [center postNotificationName:NSWorkspaceScreensDidSleepNotification object:NSWorkspace.sharedWorkspace];
+    XCTAssertTrue(controller.screensAsleep);
+    XCTAssertNil(controller.pulseTimer, @"No timer may run while nobody can see the icon.");
+    XCTAssertTrue(button.image == [SLTStatusItemImageProvider.currentProvider activeIconImage], @"The steady active icon shows while paused.");
+
+    [center postNotificationName:NSWorkspaceScreensDidWakeNotification object:NSWorkspace.sharedWorkspace];
+    XCTAssertFalse(controller.screensAsleep);
+    XCTAssertNotNil(controller.pulseTimer, @"The pulse starts again when the displays wake.");
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.8], 6u);
+
+    controller.appearance = SLTStatusItemAppearanceInactive;
+    [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
 }
 
 - (void)testPulseSurvivesAnIconColorChangeWhileRunning
@@ -258,7 +299,7 @@
     if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
 
     controller.appearance = SLTStatusItemAppearanceActive;
-    Auto whiteFrames = SLTStatusItemImageProvider.currentProvider.activePulseFrames;
+    Auto whiteFrames = [SLTStatusItemImageProvider.currentProvider pulseFramesForDuration:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration];
 
     NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorDark;
     [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.4]];

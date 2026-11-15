@@ -42,7 +42,13 @@ const NSImageName SLTStatusItemInactiveImageName = @"InactiveIcon";
 
 #pragma mark - Pulse Frames
 
-const NSUInteger SLTStatusItemPulseFrameCount = 16;
+const NSUInteger SLTStatusItemPulseFramesPerSecond = 20;
+
+NSUInteger SLTStatusItemPulseFrameCountForDuration(NSTimeInterval duration)
+{
+    Auto count = (NSUInteger)llround(duration * (double)SLTStatusItemPulseFramesPerSecond);
+    return MIN(MAX(count, 8u), 200u);
+}
 
 // The pulse has to be visible against the icon itself. The screen is a hole in the body, so it
 // is drawn straight onto the menu bar. A screen that only fades in transparency would blend
@@ -59,15 +65,16 @@ static NSColor *SLTOppositeColor(NSColor *bodyColor)
     return SLTResolvedColor(bodyColor.brightnessComponent > 0.5 ? NSColor.blackColor : NSColor.whiteColor);
 }
 
-+ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color
++ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color frameCount:(NSUInteger)frameCount
 {
     Auto symbolSize = [NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil].size;
-    Auto frames = [NSMutableArray<NSImage *> arrayWithCapacity:SLTStatusItemPulseFrameCount];
+    Auto frames = [NSMutableArray<NSImage *> arrayWithCapacity:frameCount];
 
-    for(NSUInteger index = 0; index < SLTStatusItemPulseFrameCount; index++)
+    for(NSUInteger index = 0; index < frameCount; index++)
     {
-        // The pulse starts at full strength and fades to a tenth and back.
-        Auto phase = 2.0 * M_PI * (double)index / (double)SLTStatusItemPulseFrameCount;
+        // The pulse starts at full strength and fades to a tenth and back, along a cosine curve
+        // so it eases at both ends.
+        Auto phase = 2.0 * M_PI * (double)index / (double)frameCount;
         Auto strength = (CGFloat)(0.55 + 0.45 * cos(phase));
 
         Auto frame = [NSImage imageWithSize:symbolSize flipped:NO drawingHandler:^BOOL(NSRect rect) {
