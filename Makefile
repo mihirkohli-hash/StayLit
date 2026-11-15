@@ -1,5 +1,6 @@
 NAME = StayLit
-VERSION = 1.6.6
+# The version comes from the project settings, so it cannot drift from the app.
+VERSION := $(shell awk -F' = ' '/^MARKETING_VERSION/ {print $$2}' Configuration.xcconfig)
 
 SCHEME = $(NAME)
 TARGET = $(NAME)
@@ -93,21 +94,40 @@ dist: $(OUTPUT_DIR)/$(NAME)-$(VERSION).zip
 	@spctl -a -vv $(OUTPUT_DIR)/$(NAME).app
 PHONY: dist
 
-DMG_VERSION := $(shell awk -F' = ' '/^MARKETING_VERSION/ {print $$2}' Configuration.xcconfig)
+# Fetches the Swift packages at the versions in Package.resolved. A machine with no package cache
+# needs this before a build, because the build itself must not resolve packages.
+resolve-packages:
+	@mkdir -p "$(BUILD_DIR)"
+	$(XCODEBUILD) -resolvePackageDependencies \
+	-workspace "$(WORKSPACE)" \
+	-scheme "$(SCHEME)" \
+	-derivedDataPath "$(BUILD_DIR)" \
+	-onlyUsePackageVersionsFromResolvedFile \
+	-quiet
+.PHONY: resolve-packages
+
+# Runs the unit tests the way CI does. The full log goes to a file, and only failures and the summary
+# are printed. The result bundle lets CI keep the details of a failed run.
+test-ci: resolve-packages
+	$(RM) -r "$(BUILD_DIR)/TestResults.xcresult"
+	$(XCODEBUILD) test \
+	-workspace "$(WORKSPACE)" \
+	-scheme "$(SCHEME)" \
+	-destination 'platform=macOS' \
+	-derivedDataPath "$(BUILD_DIR)" \
+	-resultBundlePath "$(BUILD_DIR)/TestResults.xcresult" \
+	CODE_SIGNING_ALLOWED=NO \
+	$(DISABLE_PACKAGE_RESOLUTION) \
+	2>&1 | tee "$(BUILD_DIR)/test.log" | awk '/: error: |\*\* TEST|Executed [0-9]+ tests|Test Case .* (failed|skipped)/'
+.PHONY: test-ci
+
 LOCAL_APP = $(BUILD_DIR)/Build/Products/Release/$(NAME).app
-DMG = $(OUTPUT_DIR)/$(NAME)-$(DMG_VERSION).dmg
+DMG = $(OUTPUT_DIR)/$(NAME)-$(VERSION).dmg
 
 # Builds the Direct app and signs it ad hoc for use outside the App Store. An ad-hoc signed Release
 # build has no Team ID, and macOS then refuses to load the embedded Sparkle framework, which has its own.
 # The local entitlements turn off library validation to allow that. This is not a release signature.
-build-local-app:
-	@mkdir -p "$(BUILD_DIR)"
-	$(XCODEBUILD) -resolvePackageDependencies \
-	-workspace "$(WORKSPACE)" \
-	-scheme "$(DIST_TARGET)" \
-	-derivedDataPath "$(BUILD_DIR)" \
-	-onlyUsePackageVersionsFromResolvedFile \
-	-quiet
+build-local-app: resolve-packages
 	$(XCODEBUILD) build \
 	-quiet \
 	-workspace "$(WORKSPACE)" \
@@ -145,3 +165,16 @@ dmg: build-local-app
 	$(RM) -r "$(OUTPUT_DIR)/dmg-root"
 	@echo "Built $(DMG)"
 .PHONY: dmg
+
+# Release helpers. The scripts and their tests are in the Scripts folder.
+test-scripts:
+	Scripts/test-release-scripts.sh
+.PHONY: test-scripts
+
+# Turns the Unreleased changelog notes into the notes of a new version and sets the version number.
+# Usage: make prepare-release VERSION=1.7.0
+prepare-release:
+	@test "$(origin VERSION)" = "command line" || { echo "usage: make prepare-release VERSION=1.7.0"; exit 64; }
+	Scripts/prepare-release.sh "$(VERSION)"
+.PHONY: prepare-release
+
