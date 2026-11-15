@@ -271,13 +271,21 @@
         XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval * (NSTimeInterval)count, seconds.doubleValue, 0.001, @"One cycle must last %@ seconds", seconds);
     }
 
-    // The cycle really repeats after its frame count: a 0.5 second pulse has only 10 different images in a second.
+    // The cycle repeats after exactly its frame count. This steps the frames by hand, so it does not
+    // depend on how fast the timer runs on a busy machine. A 0.5 second pulse has 10 images.
     NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 0.5;
     [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-    XCTAssertLessThanOrEqual([self distinctImagesShownBy:button over:1.0], 10u);
+    Auto shortCycle = [NSMutableArray<NSImage *> new];
+    for(int step = 0; step < 20; step++) { [controller showNextPulseFrame]; [shortCycle addObject:button.image]; }
+    XCTAssertEqual([NSSet setWithArray:shortCycle].count, 10u, @"A 0.5 second pulse has 10 different images.");
+    XCTAssertEqualObjects([shortCycle subarrayWithRange:NSMakeRange(0, 10)], [shortCycle subarrayWithRange:NSMakeRange(10, 10)], @"The second cycle repeats the first.");
+
+    // A 5 second pulse has 100 images, so 100 steps show no image twice.
     NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 5.0;
     [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 14u, @"A 5 second pulse does not repeat within a second.");
+    Auto longCycle = [NSMutableArray<NSImage *> new];
+    for(int step = 0; step < 100; step++) { [controller showNextPulseFrame]; [longCycle addObject:button.image]; }
+    XCTAssertEqual([NSSet setWithArray:longCycle].count, 100u, @"A 5 second pulse does not repeat within its cycle.");
 
     controller.appearance = SLTStatusItemAppearanceInactive;
     XCTAssertNil(controller.pulseTimer, @"Deactivating stops the timer, whatever the speed.");

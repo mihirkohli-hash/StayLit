@@ -24,6 +24,10 @@ extern NSString * const SLTStatusItemPulseAnimationKey;
 /// YES between the displays going to sleep and waking up, for example with the lid closed.
 @property (nonatomic) BOOL screensAsleep;
 
+/// Shows the next pulse frame. The timer calls this. Tests call it to step through the frames
+/// one at a time, without depending on how fast the machine runs the timer.
+- (void)showNextPulseFrame;
+
 /// Replaces the Reduce Motion setting of macOS. It exists for tests, which must give the same
 /// result on a Mac that has Reduce Motion on and one that has it off. Leave it nil in the app.
 @property (nonatomic, nullable) NSNumber *reduceMotionOverride;
