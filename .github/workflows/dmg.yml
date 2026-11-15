@@ -1,9 +1,10 @@
 name: Build and release
 
 # Tests the app on every push to main, and builds a disk image when the tests pass.
-# A version tag that starts with v also publishes the image as a GitHub release, with the notes
-# of that version from CHANGELOG.md. The app is signed ad hoc, so this is a test and personal build,
-# not a notarized release.
+# For a release, the image is attached to it as a download, together with a checksum file.
+# A release starts in one of two ways. Pushing a tag that starts with v creates the release, with the
+# notes of that version from CHANGELOG.md. Publishing a release by hand in GitHub only gets the files.
+# The app is signed ad hoc, so this is a test and personal build, not a notarized release.
 on:
   push:
     branches: [main]
@@ -15,12 +16,16 @@ on:
       - 'Documentation/**'
       - 'LICENSE'
       - 'NOTICE'
+  # A release made in GitHub itself, whose tag may already exist.
+  release:
+    types: [published]
   workflow_dispatch:
 
-# A newer push replaces a run that is still going for the same ref.
+# A newer push replaces a run that is still going for the same branch. A release is never cancelled,
+# because creating a release by hand can start two runs for the same tag, and each one is safe to repeat.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 permissions:
   contents: read
@@ -109,10 +114,31 @@ jobs:
             exit 1
           fi
 
-      - name: Publish the release
+      # Anyone who downloads the image can check it with this file.
+      - name: Write the checksum of the image
+        run: |
+          cd dmg
+          for image in *.dmg; do sha256sum "$image" > "$image.sha256"; done
+          ls -l
+
+      # A release that already exists, for example one made by hand, keeps its own notes and only gets
+      # the files. Otherwise the release is created with the notes of this version from the changelog.
+      - name: Attach the image to the release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          Scripts/release-notes.sh "$TAG" > release-notes.md
-          gh release create "$TAG" dmg/*.dmg --repo "$GITHUB_REPOSITORY" --title "StayLit $TAG" --notes-file release-notes.md
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" dmg/* --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            Scripts/release-notes.sh "$TAG" > release-notes.md
+            {
+              echo
+              echo '## Install'
+              echo
+              echo 'Download the disk image below, open it and drag StayLit to the Applications folder.'
+              echo 'The app is signed ad hoc and not notarized, so the first time you open it, right-click the app and choose Open.'
+              echo 'The .sha256 file is the checksum of the image.'
+            } >> release-notes.md
+            gh release create "$TAG" dmg/* --repo "$GITHUB_REPOSITORY" --title "StayLit $TAG" --notes-file release-notes.md
+          fi

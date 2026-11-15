@@ -25,12 +25,16 @@ Yes, if you turn on **Stay awake when the lid is closed** in the Advanced settin
 
 ## Releasing
 
-GitHub Actions tests the app on every push to `main` and builds a disk image when the tests pass. Download it from the run's artifacts. A version tag publishes it as a release, with the notes of that version from `CHANGELOG.md`.
+GitHub Actions tests the app on every push to `main` and builds a disk image when the tests pass. Download it from the run's artifacts. Every release gets the disk image as a download, together with a `.sha256` checksum file.
 
 1. While you work, add each user-visible change under `### Unreleased` in `CHANGELOG.md`.
 2. Run `make prepare-release VERSION=1.7.0`. It turns the unreleased notes into the notes of that version, adds a fresh `### Unreleased` section and sets the version number. It does not run git.
 3. Review the changes, commit them and push to `main`.
-4. Run `git tag v1.7.0 && git push origin v1.7.0`. The workflow checks that the tag matches the app version, then publishes the release.
+4. Start the release in one of two ways:
+   * Run `git tag v1.7.0 && git push origin v1.7.0`. The workflow creates the release with the notes of that version from the changelog.
+   * Or publish a release for that tag in GitHub. It keeps the notes you wrote, and the workflow adds the files to it.
+
+Either way the workflow checks that the tag matches the app version before it publishes anything.
 
 The image is signed ad hoc and not notarized, so macOS asks for confirmation the first time the app opens. A shareable release needs signing with an Apple Developer ID.
 
