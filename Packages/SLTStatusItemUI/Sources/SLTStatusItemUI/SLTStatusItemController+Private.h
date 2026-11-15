@@ -24,6 +24,10 @@ extern NSString * const SLTStatusItemPulseAnimationKey;
 /// YES between the displays going to sleep and waking up, for example with the lid closed.
 @property (nonatomic) BOOL screensAsleep;
 
+/// Replaces the Reduce Motion setting of macOS. It exists for tests, which must give the same
+/// result on a Mac that has Reduce Motion on and one that has it off. Leave it nil in the app.
+@property (nonatomic, nullable) NSNumber *reduceMotionOverride;
+
 /// Starts or stops the fade of a whole view. This is for custom icons, which have no separate screen.
 ///
 /// One fade down and back up takes `duration`. Starting again with the same duration keeps the

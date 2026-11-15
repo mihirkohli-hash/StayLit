@@ -215,6 +215,11 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
     [layer addAnimation:animation forKey:SLTStatusItemPulseAnimationKey];
 }
 
+- (BOOL)isReduceMotionEnabled
+{
+    return self.reduceMotionOverride != nil ? self.reduceMotionOverride.boolValue : NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion;
+}
+
 - (void)updateButtonPulse
 {
     Auto button = self.systemStatusItem.button;
@@ -225,7 +230,7 @@ NSString * const SLTStatusItemPulseAnimationKey = @"StayLitPulse";
 
     Auto shouldPulse = [SLTStatusItemController shouldPulseForAppearance:self.currentAppearance
                                                            pulseDisabled:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled
-                                                            reduceMotion:NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion
+                                                            reduceMotion:[self isReduceMotionEnabled]
                                                            screensAsleep:self.screensAsleep];
 
     Auto duration = NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration;

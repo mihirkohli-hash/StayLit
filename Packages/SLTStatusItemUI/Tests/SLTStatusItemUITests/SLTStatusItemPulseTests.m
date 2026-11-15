@@ -190,38 +190,60 @@
     Auto controller = [SLTStatusItemController new];
     Auto button = controller.systemStatusItem.button;
     if(button == nil) { XCTSkip(@"No menu bar is available in this session."); }
-
-    // Under Reduce Motion the status item must stay still, so only the quiet states are asserted then.
-    Auto reduceMotion = NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion;
+    controller.reduceMotionOverride = @NO;
 
     controller.appearance = SLTStatusItemAppearanceInactive;
     XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"An inactive icon must be still.");
 
     controller.appearance = SLTStatusItemAppearanceActive;
-    if(reduceMotion)
-    {
-        XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"Reduce Motion is on.");
-    }
-    else
-    {
-        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"An active icon cycles through the pulse frames.");
-        XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"The body must not fade. Only the screen pulses.");
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"An active icon cycles through the pulse frames.");
+    XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"The body must not fade. Only the screen pulses.");
 
-        // Turning the setting off must stop a pulse that is already running.
-        NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = YES;
-        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-        XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"The setting stops the pulse at once.");
-        XCTAssertTrue(button.image == SLTStatusItemImageProvider.currentProvider.activeIconImage, @"A stopped pulse shows the steady active icon.");
+    // Turning the setting off must stop a pulse that is already running.
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = YES;
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+    XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"The setting stops the pulse at once.");
+    XCTAssertTrue(button.image == SLTStatusItemImageProvider.currentProvider.activeIconImage, @"A stopped pulse shows the steady active icon.");
 
-        NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = NO;
-        [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"Turning it back on resumes the pulse.");
-    }
+    NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = NO;
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"Turning it back on resumes the pulse.");
 
     controller.appearance = SLTStatusItemAppearanceInactive;
     XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"Deactivating stops the pulse.");
     XCTAssertTrue(button.image == SLTStatusItemImageProvider.currentProvider.inactiveIconImage, @"Deactivating shows the inactive icon.");
 
+    [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
+}
+
+- (void)testReduceMotionKeepsTheIconStillAndStopsARunningPulse
+{
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
+    Auto controller = [SLTStatusItemController new];
+    Auto button = controller.systemStatusItem.button;
+    if(button == nil) { XCTSkip(@"No menu bar is available in this session."); }
+
+    // With Reduce Motion on from the start, an active icon stays still.
+    controller.reduceMotionOverride = @YES;
+    controller.appearance = SLTStatusItemAppearanceActive;
+    XCTAssertNil(controller.pulseTimer);
+    XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u, @"Reduce Motion is on.");
+
+    // Turning it off in System Settings starts the pulse, turning it on again stops it.
+    Auto center = NSWorkspace.sharedWorkspace.notificationCenter;
+    controller.reduceMotionOverride = @NO;
+    [center postNotificationName:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:NSWorkspace.sharedWorkspace];
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]]; // the controller reacts on the next turn of the run loop
+    XCTAssertNotNil(controller.pulseTimer, @"The pulse starts when Reduce Motion goes off.");
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u);
+
+    controller.reduceMotionOverride = @YES;
+    [center postNotificationName:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:NSWorkspace.sharedWorkspace];
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+    XCTAssertNil(controller.pulseTimer, @"The pulse stops when Reduce Motion goes on.");
+    XCTAssertEqual([self distinctImagesShownBy:button over:0.5], 1u);
+
+    controller.appearance = SLTStatusItemAppearanceInactive;
     [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
 }
 
@@ -233,7 +255,8 @@
 
     Auto controller = [SLTStatusItemController new];
     Auto button = controller.systemStatusItem.button;
-    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
+    if(button == nil) { XCTSkip(@"No menu bar is available in this session."); }
+    controller.reduceMotionOverride = @NO;
 
     controller.appearance = SLTStatusItemAppearanceActive;
     XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 2.0 / 40.0, 0.0001, @"The default is a two second cycle of 40 steps.");
@@ -268,7 +291,8 @@
     [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
     Auto controller = [SLTStatusItemController new];
     Auto button = controller.systemStatusItem.button;
-    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
+    if(button == nil) { XCTSkip(@"No menu bar is available in this session."); }
+    controller.reduceMotionOverride = @NO;
 
     controller.appearance = SLTStatusItemAppearanceActive;
     XCTAssertNotNil(controller.pulseTimer);
@@ -296,7 +320,8 @@
 
     Auto controller = [SLTStatusItemController new];
     Auto button = controller.systemStatusItem.button;
-    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
+    if(button == nil) { XCTSkip(@"No menu bar is available in this session."); }
+    controller.reduceMotionOverride = @NO;
 
     controller.appearance = SLTStatusItemAppearanceActive;
     Auto whiteFrames = [SLTStatusItemImageProvider.currentProvider pulseFramesForDuration:NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration];
