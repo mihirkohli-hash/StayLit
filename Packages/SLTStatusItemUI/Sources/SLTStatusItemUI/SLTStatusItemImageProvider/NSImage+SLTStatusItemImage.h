@@ -27,11 +27,10 @@ extern const NSUInteger SLTStatusItemPulseFrameCount;
 
 /// Returns the images of one pulse cycle for the built-in icon.
 ///
-/// The monitor body keeps the icon color. Only the screen changes: it glows in the pulse color
-/// and fades between bright and dim. The images are drawn on demand, so the body, the accent
-/// color and the system colors follow the menu bar appearance and System Settings.
-+ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color
-                                            pulseColor:(SLTMenuBarIconPulseColor)pulseColor;
+/// The monitor body keeps the icon color. Only the screen changes: its color fades from the
+/// body color to the opposite color and back, so a white icon pulses black and a dark icon pulses white.
+/// The images are drawn on demand, so the body follows the menu bar appearance.
++ (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color;
 
 /// Returns the template image drawn in the requested menu bar icon color.
 ///

@@ -247,41 +247,6 @@
     else { [NSUserDefaults.standardUserDefaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds]; }
 }
 
-- (void)testPulseSwitchesToTheNewPulseColorWhileRunning
-{
-    Auto defaults = NSUserDefaults.standardUserDefaults;
-    Auto previousPulseColor = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
-    Auto previousIconColor = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconColor];
-    [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDisabled];
-    defaults.slt_menuBarIconColor = SLTMenuBarIconColorWhite;
-    defaults.slt_menuBarIconPulseColor = SLTMenuBarIconPulseColorGreen;
-
-    Auto controller = [SLTStatusItemController new];
-    Auto button = controller.systemStatusItem.button;
-    if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
-
-    controller.appearance = SLTStatusItemAppearanceActive;
-    Auto greenFrames = SLTStatusItemImageProvider.currentProvider.activePulseFrames;
-    [self distinctImagesShownBy:button over:0.3];
-    XCTAssertTrue([greenFrames containsObject:button.image], @"The pulse starts with the green frames.");
-
-    defaults.slt_menuBarIconPulseColor = SLTMenuBarIconPulseColorRed;
-    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-    Auto redFrames = SLTStatusItemImageProvider.currentProvider.activePulseFrames;
-
-    XCTAssertFalse([greenFrames isEqualToArray:redFrames]);
-    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.8], 8u, @"The pulse keeps running after the color changes.");
-    XCTAssertFalse([greenFrames containsObject:button.image], @"The green frames are gone.");
-    XCTAssertTrue([redFrames containsObject:button.image], @"The pulse now shows the red frames.");
-
-    controller.appearance = SLTStatusItemAppearanceInactive;
-    [NSStatusBar.systemStatusBar removeStatusItem:controller.systemStatusItem];
-    if(previousPulseColor) { [defaults setObject:previousPulseColor forKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
-    else { [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
-    if(previousIconColor) { [defaults setObject:previousIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor]; }
-    else { [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor]; }
-}
-
 - (void)testPulseSurvivesAnIconColorChangeWhileRunning
 {
     Auto previousColor = [NSUserDefaults.standardUserDefaults objectForKey:SLTUserDefaultsKeyMenuBarIconColor];

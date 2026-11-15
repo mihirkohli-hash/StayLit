@@ -102,32 +102,6 @@ NSString * const SLTUserDefaultsKeyMenuBarIconColor = @"io.github.mihirkohli-has
     [self setInteger:menuBarIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor];
 }
 
-#pragma mark - Menu Bar Icon Pulse Color
-
-NSString * const SLTUserDefaultsKeyMenuBarIconPulseColor = @"io.github.mihirkohli-hash.StayLit.MenuBarIconPulseColor";
-
-- (SLTMenuBarIconPulseColor)slt_menuBarIconPulseColor
-{
-    // A missing key must not read as 0, which is a real choice (the accent color).
-    Auto storedObject = [self objectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
-    if(![storedObject isKindOfClass:NSNumber.class])
-    {
-        return SLTMenuBarIconPulseColorContrast;
-    }
-
-    Auto storedValue = [storedObject integerValue];
-    if(storedValue < SLTMenuBarIconPulseColorAccent || storedValue > SLTMenuBarIconPulseColorContrast)
-    {
-        return SLTMenuBarIconPulseColorContrast;
-    }
-    return (SLTMenuBarIconPulseColor)storedValue;
-}
-
-- (void)setSlt_menuBarIconPulseColor:(SLTMenuBarIconPulseColor)menuBarIconPulseColor
-{
-    [self setInteger:menuBarIconPulseColor forKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
-}
-
 #pragma mark - Menu Bar Icon Pulse Duration
 
 NSString * const SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds = @"io.github.mihirkohli-hash.StayLit.MenuBarIconPulseDurationMilliseconds";

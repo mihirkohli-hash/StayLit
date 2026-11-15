@@ -46,34 +46,20 @@ const NSUInteger SLTStatusItemPulseFrameCount = 16;
 
 // The pulse has to be visible against the icon itself. The screen is a hole in the body, so it
 // is drawn straight onto the menu bar. A screen that only fades in transparency would blend
-// into the bar, and a color equal to the bar would then not be seen at all. So the screen
-// is opaque, and its color moves between the body color and the pulse color.
+// into the bar. So the screen is opaque, and its color moves between the body color and its opposite.
 static NSColor *SLTResolvedColor(NSColor *color)
 {
     // Dynamic colors are resolved here, against the appearance the image is drawn with.
     return [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace] ?: color;
 }
 
-// The color the screen fades towards at full strength.
-static NSColor *SLTPulseTargetColor(SLTMenuBarIconPulseColor pulseColor, NSColor *bodyColor)
+// The opposite of the body: black on a white body and white on a dark one.
+static NSColor *SLTOppositeColor(NSColor *bodyColor)
 {
-    switch(pulseColor)
-    {
-        // The opposite of the body: black on a white body and white on a dark one.
-        case SLTMenuBarIconPulseColorContrast: return SLTResolvedColor(bodyColor.brightnessComponent > 0.5 ? NSColor.blackColor : NSColor.whiteColor);
-        case SLTMenuBarIconPulseColorGreen: return SLTResolvedColor(NSColor.systemGreenColor);
-        case SLTMenuBarIconPulseColorBlue: return SLTResolvedColor(NSColor.systemBlueColor);
-        case SLTMenuBarIconPulseColorOrange: return SLTResolvedColor(NSColor.systemOrangeColor);
-        case SLTMenuBarIconPulseColorRed: return SLTResolvedColor(NSColor.systemRedColor);
-        case SLTMenuBarIconPulseColorPurple: return SLTResolvedColor(NSColor.systemPurpleColor);
-        case SLTMenuBarIconPulseColorSameAsIcon: return bodyColor;
-        case SLTMenuBarIconPulseColorAccent: break;
-    }
-    return SLTResolvedColor(NSColor.controlAccentColor);
+    return SLTResolvedColor(bodyColor.brightnessComponent > 0.5 ? NSColor.blackColor : NSColor.whiteColor);
 }
 
 + (NSArray<NSImage *> *)slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)color
-                                            pulseColor:(SLTMenuBarIconPulseColor)pulseColor
 {
     Auto symbolSize = [NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil].size;
     Auto frames = [NSMutableArray<NSImage *> arrayWithCapacity:SLTStatusItemPulseFrameCount];
@@ -96,17 +82,7 @@ static NSColor *SLTPulseTargetColor(SLTMenuBarIconPulseColor pulseColor, NSColor
             if(color == SLTMenuBarIconColorDark) { bodyColor = NSColor.blackColor; }
             bodyColor = SLTResolvedColor(bodyColor);
 
-            NSColor *screenColor = nil;
-            if(pulseColor == SLTMenuBarIconPulseColorSameAsIcon)
-            {
-                // Same color as the body, so only the opacity can change.
-                screenColor = [bodyColor colorWithAlphaComponent:strength];
-            }
-            else
-            {
-                screenColor = [bodyColor blendedColorWithFraction:strength ofColor:SLTPulseTargetColor(pulseColor, bodyColor)] ?: bodyColor;
-            }
-
+            Auto screenColor = [bodyColor blendedColorWithFraction:strength ofColor:SLTOppositeColor(bodyColor)] ?: bodyColor;
             Auto configuration = [NSImageSymbolConfiguration configurationWithPaletteColors:@[bodyColor, screenColor]];
             Auto symbol = [[NSImage imageWithSystemSymbolName:@"desktopcomputer" accessibilityDescription:nil] imageWithSymbolConfiguration:configuration];
             [symbol drawInRect:rect];

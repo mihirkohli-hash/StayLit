@@ -17,7 +17,6 @@ SLT_EXPORT NSString * const SLTUserDefaultsKeyDeactivateOnUserSwitchEnabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconHighlightDisabled;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconColor;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconPulseDisabled;
-SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconPulseColor;
 SLT_EXPORT NSString * const SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds;
 
 /// The default length of one pulse, in seconds.
@@ -42,25 +41,6 @@ typedef NS_ENUM(NSInteger, SLTMenuBarIconColor) {
     SLTMenuBarIconColorDark = 1,
     /// A template icon that macOS draws white or black to match the menu bar.
     SLTMenuBarIconColorFollowSystem = 2,
-};
-
-/// The color of the screen on the menu bar icon while it pulses.
-///
-/// The raw values are stored in the user defaults, so do not reorder them.
-/// The contrast color is the default when nothing is stored.
-typedef NS_ENUM(NSInteger, SLTMenuBarIconPulseColor) {
-    /// The accent color from System Settings.
-    SLTMenuBarIconPulseColorAccent = 0,
-    SLTMenuBarIconPulseColorGreen = 1,
-    SLTMenuBarIconPulseColorBlue = 2,
-    SLTMenuBarIconPulseColorOrange = 3,
-    SLTMenuBarIconPulseColorRed = 4,
-    SLTMenuBarIconPulseColorPurple = 5,
-    /// The color of the icon body, so only the brightness of the screen changes.
-    SLTMenuBarIconPulseColorSameAsIcon = 6,
-    /// The opposite of the icon body: black on a white icon and white on a dark icon.
-    /// With the icon color Follow System, it is the opposite of the menu bar text color.
-    SLTMenuBarIconPulseColorContrast = 7,
 };
 
 @interface NSUserDefaults (SLTKeys)
@@ -88,9 +68,6 @@ typedef NS_ENUM(NSInteger, SLTMenuBarIconPulseColor) {
 /// A missing, non-numeric or non-positive value returns the default of 1 second.
 /// Any other value is limited to the range of the minimum and maximum duration.
 @property (nonatomic) NSTimeInterval slt_menuBarIconPulseDuration;
-
-/// The color of the pulsing screen. A missing or unknown stored value returns the contrast color.
-@property (nonatomic) SLTMenuBarIconPulseColor slt_menuBarIconPulseColor;
 
 /// Returns YES if the menu bar icon should not be highlighted on left and right click.
 @property (nonatomic, getter = slt_isMenuBarIconHighlightDisabled) BOOL slt_menuBarIconHighlightDisabled;

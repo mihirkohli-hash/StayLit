@@ -211,7 +211,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testPulseFramesCoverOneFullCycle
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:SLTMenuBarIconPulseColorAccent];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
     XCTAssertEqual(frames.count, SLTStatusItemPulseFrameCount);
     XCTAssertEqual(frames.count, 16u);
 
@@ -226,11 +226,11 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testPulseKeepsTheMonitorBodySteadyInEveryColor
 {
-    // Only the screen may change. The body is the opaque part, so its pixel count must not move.
+    // Only the screen may change. The body is the opaque part in the icon color, so its pixel count must not move.
     for(NSNumber *colorValue in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
     {
         Auto color = (SLTMenuBarIconColor)colorValue.integerValue;
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:color pulseColor:SLTMenuBarIconPulseColorAccent];
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:color];
         Auto first = SLTCountPixels(frames.firstObject);
 
         for(NSImage *frame in frames)
@@ -239,15 +239,16 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
             if(color == SLTMenuBarIconColorWhite)
             {
                 XCTAssertEqual(counts.white, first.white, @"The white body must not change between frames.");
-                XCTAssertEqual(counts.black, 0u);
             }
             else
             {
                 XCTAssertEqual(counts.black, first.black, @"The dark body must not change between frames.");
-                XCTAssertEqual(counts.white, 0u);
             }
         }
         XCTAssertGreaterThan(color == SLTMenuBarIconColorWhite ? first.white : first.black, 500u);
+
+        // At full strength the screen has the opposite color: black on a white icon, white on a dark one.
+        XCTAssertGreaterThan(color == SLTMenuBarIconColorWhite ? first.black : first.white, 200u);
     }
 }
 
@@ -255,7 +256,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 {
     // The screen is opaque and its color moves from the body color to the pulse color, so the
     // total brightness is the signal. Full strength is the accent color, and the weakest frame is nearly white.
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:SLTMenuBarIconPulseColorAccent];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
     Auto strongest = SLTCountPixels(frames[0]).lumaSum;
     Auto weakest = SLTCountPixels(frames[8]).lumaSum;
     Auto swing = fabs(weakest - strongest);
@@ -276,41 +277,29 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     // The screen is a hole in the body, so any transparency would let the bar show through and
     // hide the pulse. Only the anti-aliased edge between screen and body may be partly transparent.
     // A fading screen would have thousands of such pixels, because its whole area would be.
-    for(NSNumber *pulseColor in @[@(SLTMenuBarIconPulseColorContrast), @(SLTMenuBarIconPulseColorAccent), @(SLTMenuBarIconPulseColorGreen)])
+    for(NSNumber *iconColor in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
     {
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:(SLTMenuBarIconPulseColor)pulseColor.integerValue];
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue];
         for(NSImage *frame in frames)
         {
             Auto counts = SLTCountPixels(frame);
-            XCTAssertLessThan(counts.translucent, 1500u, @"Pulse color %@ must not fade the screen with transparency", pulseColor);
+            XCTAssertLessThan(counts.translucent, 1500u, @"Icon color %@ must not fade the screen with transparency", iconColor);
         }
     }
 }
 
-- (void)testPulsingScreenUsesTheAccentColor
-{
-    Auto accent = [NSColor.controlAccentColor colorUsingColorSpace:NSColorSpace.deviceRGBColorSpace];
-    Auto spread = MAX(MAX(accent.redComponent, accent.greenComponent), accent.blueComponent) - MIN(MIN(accent.redComponent, accent.greenComponent), accent.blueComponent);
-    if(spread < 0.3)
-    {
-        XCTSkip(@"The macOS accent color is graphite, which has no color to look for.");
-    }
-
-    Auto counts = SLTCountPixels([NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:SLTMenuBarIconPulseColorAccent][0]);
-    XCTAssertGreaterThan(counts.colored, 200u, @"The screen should be drawn in the accent color.");
-}
-
 - (void)testFollowSystemBodyAdaptsToTheMenuBarAppearance
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem pulseColor:SLTMenuBarIconPulseColorAccent];
+    // Frame 6 has a mid-gray screen, so only the body counts as light or dark here.
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem];
 
     __block SLTPixelCounts onDarkBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{
-        onDarkBar = SLTCountPixels(frames[0]);
+        onDarkBar = SLTCountPixels(frames[6]);
     }];
     __block SLTPixelCounts onLightBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     [[NSAppearance appearanceNamed:NSAppearanceNameAqua] performAsCurrentDrawingAppearance:^{
-        onLightBar = SLTCountPixels(frames[0]);
+        onLightBar = SLTCountPixels(frames[6]);
     }];
 
     XCTAssertGreaterThan(onDarkBar.lightBody, 500u, @"On a dark menu bar the body is light.");
@@ -339,99 +328,11 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 #pragma mark - Pulse colors
 
-- (SLTPixelCounts)countsOfFirstPulseFrameWithPulseColor:(SLTMenuBarIconPulseColor)pulseColor
-{
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:pulseColor];
-    return SLTCountPixels(frames.firstObject); // the first frame is the screen at full strength
-}
-
-- (void)testGreenPulseDrawsAGreenScreen
-{
-    Auto counts = [self countsOfFirstPulseFrameWithPulseColor:SLTMenuBarIconPulseColorGreen];
-    XCTAssertGreaterThan(counts.greenHue, 200u);
-    XCTAssertEqual(counts.redHue + counts.blueHue, 0u);
-}
-
-- (void)testRedPulseDrawsARedScreen
-{
-    Auto counts = [self countsOfFirstPulseFrameWithPulseColor:SLTMenuBarIconPulseColorRed];
-    XCTAssertGreaterThan(counts.redHue, 200u);
-    XCTAssertEqual(counts.greenHue + counts.blueHue, 0u);
-}
-
-- (void)testOrangePulseDrawsAnOrangeScreen
-{
-    // Orange has red as its strongest channel and green as its second.
-    Auto counts = [self countsOfFirstPulseFrameWithPulseColor:SLTMenuBarIconPulseColorOrange];
-    XCTAssertGreaterThan(counts.redHue, 200u);
-    XCTAssertEqual(counts.greenHue + counts.blueHue, 0u);
-}
-
-- (void)testBlueAndPurplePulsesDrawABluishScreen
-{
-    for(NSNumber *pulseColor in @[@(SLTMenuBarIconPulseColorBlue), @(SLTMenuBarIconPulseColorPurple)])
-    {
-        Auto counts = [self countsOfFirstPulseFrameWithPulseColor:(SLTMenuBarIconPulseColor)pulseColor.integerValue];
-        XCTAssertGreaterThan(counts.blueHue, 200u, @"Pulse color %@", pulseColor);
-        XCTAssertEqual(counts.greenHue, 0u);
-    }
-}
-
-- (void)testSameAsIconPulseDrawsNoColorAtAll
-{
-    // The screen takes the color of the body, so only its brightness changes.
-    Auto counts = [self countsOfFirstPulseFrameWithPulseColor:SLTMenuBarIconPulseColorSameAsIcon];
-    XCTAssertEqual(counts.colored, 0u);
-    XCTAssertGreaterThan(counts.white, 500u);
-}
-
-- (void)testEveryPulseColorKeepsTheBodySteadyAndTheScreenBreathing
-{
-    Auto firstChoice = (NSInteger)SLTMenuBarIconPulseColorAccent;
-    Auto lastChoice = (NSInteger)SLTMenuBarIconPulseColorContrast;
-    for(NSInteger choice = firstChoice; choice <= lastChoice; choice++)
-    {
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:(SLTMenuBarIconPulseColor)choice];
-        XCTAssertEqual(frames.count, SLTStatusItemPulseFrameCount);
-
-        // Frame 0 has the screen at full strength, and with "same as icon" that opaque screen would count as body.
-        // Frames 4 and 8 both have a translucent screen, so their opaque white pixels are the body only.
-        Auto strongest = SLTCountPixels(frames[0]);
-        Auto middle = SLTCountPixels(frames[4]);
-        Auto weakest = SLTCountPixels(frames[8]);
-        XCTAssertEqual(middle.white, weakest.white, @"The body must not change for pulse color %ld", (long)choice);
-        // "Same as icon" can only change opacity. Every other color changes the screen color.
-        Auto change = fabs(strongest.alphaSum - weakest.alphaSum) + fabs(strongest.lumaSum - weakest.lumaSum);
-        XCTAssertGreaterThan(change, 50.0, @"The screen must change for pulse color %ld", (long)choice);
-    }
-}
-
-- (void)testProviderCachesPulseFramesPerPulseColorToo
-{
-    Auto provider = SLTStatusItemImageProvider.standardProvider;
-    Auto defaults = NSUserDefaults.standardUserDefaults;
-    Auto previous = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
-    defaults.slt_menuBarIconColor = SLTMenuBarIconColorWhite;
-
-    defaults.slt_menuBarIconPulseColor = SLTMenuBarIconPulseColorGreen;
-    Auto green = provider.activePulseFrames;
-    XCTAssertTrue(green == provider.activePulseFrames, @"The same colors reuse the cached frames.");
-
-    defaults.slt_menuBarIconPulseColor = SLTMenuBarIconPulseColorRed;
-    XCTAssertTrue(green != provider.activePulseFrames, @"A new pulse color needs new frames.");
-
-    defaults.slt_menuBarIconPulseColor = SLTMenuBarIconPulseColorGreen;
-    XCTAssertTrue(green == provider.activePulseFrames, @"Going back finds the green frames again.");
-
-    if(previous) { [defaults setObject:previous forKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
-    else { [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
-}
-
 #pragma mark - Contrast pulse color (the default)
 
 - (void)testContrastPulseIsBlackOnAWhiteIcon
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite pulseColor:SLTMenuBarIconPulseColorContrast];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorWhite];
     Auto counts = SLTCountPixels(frames[0]); // the screen at full strength
     XCTAssertGreaterThan(counts.white, 500u, @"The body stays white.");
     XCTAssertGreaterThan(counts.black, 200u, @"The screen is black.");
@@ -440,7 +341,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testContrastPulseIsWhiteOnADarkIcon
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorDark pulseColor:SLTMenuBarIconPulseColorContrast];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorDark];
     Auto counts = SLTCountPixels(frames[0]);
     XCTAssertGreaterThan(counts.black, 500u, @"The body stays black.");
     XCTAssertGreaterThan(counts.white, 200u, @"The screen is white.");
@@ -449,7 +350,7 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 
 - (void)testContrastPulseWithFollowSystemIsTheOppositeOfTheMenuBarText
 {
-    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem pulseColor:SLTMenuBarIconPulseColorContrast];
+    Auto frames = [NSImage slt_defaultPulseFramesForColor:SLTMenuBarIconColorFollowSystem];
 
     __block SLTPixelCounts onDarkBar = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     [[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performAsCurrentDrawingAppearance:^{ onDarkBar = SLTCountPixels(frames[0]); }];
@@ -466,19 +367,17 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
 {
     for(NSNumber *iconColor in @[@(SLTMenuBarIconColorWhite), @(SLTMenuBarIconColorDark)])
     {
-        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue pulseColor:SLTMenuBarIconPulseColorContrast];
+        Auto frames = [NSImage slt_defaultPulseFramesForColor:(SLTMenuBarIconColor)iconColor.integerValue];
         Auto strongest = SLTCountPixels(frames[0]);
         Auto weakest = SLTCountPixels(frames[8]);
         XCTAssertGreaterThan(fabs(strongest.lumaSum - weakest.lumaSum), 150.0, @"The screen must fade clearly for icon color %@", iconColor);
     }
 }
 
-- (void)testTheDefaultStoredSettingsGiveTheContrastPulse
+- (void)testTheDefaultStoredSettingGivesABlackPulseOnTheWhiteIcon
 {
     Auto defaults = NSUserDefaults.standardUserDefaults;
-    Auto previousPulseColor = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
     Auto previousIconColor = [defaults objectForKey:SLTUserDefaultsKeyMenuBarIconColor];
-    [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
     [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
 
     // With nothing stored the icon is white, so the pulse must be black.
@@ -487,7 +386,6 @@ static SLTPixelCounts SLTCountPixels(NSImage *image)
     XCTAssertGreaterThan(counts.black, 200u);
     XCTAssertEqual(counts.colored, 0u);
 
-    if(previousPulseColor) { [defaults setObject:previousPulseColor forKey:SLTUserDefaultsKeyMenuBarIconPulseColor]; }
     if(previousIconColor) { [defaults setObject:previousIconColor forKey:SLTUserDefaultsKeyMenuBarIconColor]; }
 }
 

@@ -44,7 +44,6 @@
     // another test or an earlier run must not decide what a "default" test sees.
     [self.defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconColor];
     [self.defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds];
-    [self.defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
 }
 
 SLT_GENERATE_BOOL_TEST(isActivatedOnLaunch,
@@ -129,56 +128,6 @@ SLT_GENERATE_BOOL_TEST(isLowPowerModeMonitoringEnabled,
     XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite, @"A string is not a valid value");
     [defaults removeObjectForKey:key];
     XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite);
-}
-
-- (void)testMenuBarIconPulseColorDefaultsToTheContrastColor
-{
-    XCTAssertEqual(self.defaults.slt_menuBarIconPulseColor, SLTMenuBarIconPulseColorContrast);
-}
-
-- (void)testMenuBarIconPulseColorRoundTripForEveryChoice
-{
-    Auto defaults = self.defaults;
-    Auto choices = @[@(SLTMenuBarIconPulseColorAccent), @(SLTMenuBarIconPulseColorGreen), @(SLTMenuBarIconPulseColorBlue),
-                     @(SLTMenuBarIconPulseColorOrange), @(SLTMenuBarIconPulseColorRed), @(SLTMenuBarIconPulseColorPurple),
-                     @(SLTMenuBarIconPulseColorSameAsIcon), @(SLTMenuBarIconPulseColorContrast)];
-    for(NSNumber *choice in choices)
-    {
-        defaults.slt_menuBarIconPulseColor = (SLTMenuBarIconPulseColor)choice.integerValue;
-        XCTAssertEqual(defaults.slt_menuBarIconPulseColor, (SLTMenuBarIconPulseColor)choice.integerValue);
-        XCTAssertEqual([defaults integerForKey:SLTUserDefaultsKeyMenuBarIconPulseColor], choice.integerValue, @"The Settings drop-down binds to the raw value.");
-    }
-    XCTAssertEqual(choices.count, 8u);
-}
-
-- (void)testAnExplicitAccentChoiceIsKeptAndIsNotTheDefault
-{
-    // 0 is the accent color. A missing key must not be read as 0.
-    Auto defaults = self.defaults;
-    defaults.slt_menuBarIconPulseColor = SLTMenuBarIconPulseColorAccent;
-    XCTAssertEqual(defaults.slt_menuBarIconPulseColor, SLTMenuBarIconPulseColorAccent);
-
-    [defaults removeObjectForKey:SLTUserDefaultsKeyMenuBarIconPulseColor];
-    XCTAssertEqual(defaults.slt_menuBarIconPulseColor, SLTMenuBarIconPulseColorContrast);
-}
-
-- (void)testMenuBarIconPulseColorFallsBackToTheContrastColorForUnknownValues
-{
-    Auto defaults = self.defaults;
-    Auto key = SLTUserDefaultsKeyMenuBarIconPulseColor;
-
-    for(NSNumber *value in @[@(-1), @8, @99, @(NSIntegerMax), @(NSIntegerMin)])
-    {
-        [defaults setInteger:value.integerValue forKey:key];
-        XCTAssertEqual(defaults.slt_menuBarIconPulseColor, SLTMenuBarIconPulseColorContrast, @"%@ should fall back to the contrast color", value);
-    }
-    for(id value in @[@"green", @[@1], @{@"a": @1}, [NSData data]])
-    {
-        [defaults setObject:value forKey:key];
-        XCTAssertEqual(defaults.slt_menuBarIconPulseColor, SLTMenuBarIconPulseColorContrast, @"%@ is not a valid value", value);
-    }
-    [defaults removeObjectForKey:key];
-    XCTAssertEqual(defaults.slt_menuBarIconPulseColor, SLTMenuBarIconPulseColorContrast);
 }
 
 - (void)testMenuBarIconPulseDurationDefaultsToOneSecond

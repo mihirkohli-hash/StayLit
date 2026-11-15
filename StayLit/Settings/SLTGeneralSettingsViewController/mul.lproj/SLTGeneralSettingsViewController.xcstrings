@@ -631,18 +631,6 @@
         }
       }
     },
-    "Lb3-Pc-8xP.title" : {
-      "comment" : "Class = \"NSTextFieldCell\"; title = \"Pulse Color\"; ObjectID = \"Lb3-Pc-8xP\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Pulse Color"
-          }
-        }
-      }
-    },
     "Lbl-Mn-1xQ.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Menu Bar Icon Color\"; ObjectID = \"Lbl-Mn-1xQ\";",
       "extractionState" : "extracted_with_value",
@@ -651,102 +639,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Menu Bar Icon Color"
-          }
-        }
-      }
-    },
-    "Pa3-Pc-1aA.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Accent Color\"; ObjectID = \"Pa3-Pc-1aA\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Accent Color"
-          }
-        }
-      }
-    },
-    "Pb3-Pc-2bB.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Green\"; ObjectID = \"Pb3-Pc-2bB\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Green"
-          }
-        }
-      }
-    },
-    "Pc3-Pc-3cC.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Blue\"; ObjectID = \"Pc3-Pc-3cC\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Blue"
-          }
-        }
-      }
-    },
-    "Pd3-Pc-4dD.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Orange\"; ObjectID = \"Pd3-Pc-4dD\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Orange"
-          }
-        }
-      }
-    },
-    "Pe3-Pc-5eE.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Red\"; ObjectID = \"Pe3-Pc-5eE\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Red"
-          }
-        }
-      }
-    },
-    "Pf3-Pc-6fF.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Purple\"; ObjectID = \"Pf3-Pc-6fF\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Purple"
-          }
-        }
-      }
-    },
-    "Pg3-Pc-7gG.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Same as Icon\"; ObjectID = \"Pg3-Pc-7gG\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Same as Icon"
-          }
-        }
-      }
-    },
-    "Ph3-Pc-8hH.title" : {
-      "comment" : "Class = \"NSMenuItem\"; title = \"Opposite of Icon\"; ObjectID = \"Ph3-Pc-8hH\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Opposite of Icon"
           }
         }
       }
