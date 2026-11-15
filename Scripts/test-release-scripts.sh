@@ -126,8 +126,13 @@ check "an empty Unreleased section changes no file" "$before" "$(cat CHANGELOG.m
 check "a missing argument fails with a usage error" "64" "$(status "$scripts/prepare-release.sh")"
 
 # ---- the real changelog works with the real script
+# The Unreleased section is empty right after a release, so only its heading is required.
 cd "$scripts/.." || exit 1
-check "the real Unreleased section has notes" "0" "$(status "$scripts/release-notes.sh" Unreleased)"
+check "the real changelog has exactly one Unreleased heading" "1" "$(grep -c '^### Unreleased$' CHANGELOG.md)"
+newest=$(awk '/^### v[0-9]/ { heading = $0; sub(/^### v/, "", heading); sub(/ .*$/, "", heading); print heading; exit }' CHANGELOG.md)
+check "the real changelog has a released version" "1" "$([ -n "$newest" ] && echo 1 || echo 0)"
+check "the newest released version has notes" "0" "$(status "$scripts/release-notes.sh" "$newest")"
+check "the newest released version matches the app version" "$(awk -F' = ' '/^MARKETING_VERSION/ { print $2 }' Configuration.xcconfig)" "$newest"
 
 echo "passed: $passed, failed: $failed"
 [ "$failed" -eq 0 ]
