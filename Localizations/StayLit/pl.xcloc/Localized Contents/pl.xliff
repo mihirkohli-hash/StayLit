@@ -9,10 +9,6 @@
         <source>StayLit</source>
         <note>Bundle name</note>
       </trans-unit>
-      <trans-unit id="NSHumanReadableCopyright" xml:space="preserve">
-        <source>Copyright © 2026 Mihir Kohli. All rights reserved.</source>
-        <note>Copyright (human-readable)</note>
-      </trans-unit>
     </body>
   </file>
   <file original="StayLit/Localizable.xcstrings" source-language="en" target-language="pl" datatype="plaintext">
@@ -378,10 +374,6 @@ Right click to show menu</source>
       <trans-unit id="CFBundleName" xml:space="preserve">
         <source>StayLit Launcher</source>
         <note>Bundle name</note>
-      </trans-unit>
-      <trans-unit id="NSHumanReadableCopyright" xml:space="preserve">
-        <source>Copyright © 2026 Mihir Kohli. All rights reserved.</source>
-        <note>Copyright (human-readable)</note>
       </trans-unit>
     </body>
   </file>

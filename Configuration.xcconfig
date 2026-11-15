@@ -13,4 +13,3 @@ GENERATE_INFOPLIST_FILE = YES
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.utilities
 INFOPLIST_KEY_NSPrincipalClass = NSApplication
 INFOPLIST_KEY_NSMainNibFile = MainMenu
-INFOPLIST_KEY_NSHumanReadableCopyright = Copyright © 2026 Mihir Kohli. All rights reserved.

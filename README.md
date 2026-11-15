@@ -33,4 +33,4 @@ If you plan to contribute to the project, please read the [Contribution Guidelin
 
 ## License
 
-StayLit is licensed under the [MIT license](./LICENSE). Parts of it come from other MIT-licensed software. Their copyright notices are in [NOTICE](./NOTICE) and in the headers of the source files.
+StayLit is licensed under the [MIT license](./LICENSE). Parts of it come from other MIT-licensed software. Their copyright notices are in [NOTICE](./NOTICE).
