@@ -23,6 +23,17 @@ Yes, if you turn on **Stay awake when the lid is closed** in the Advanced settin
 * **Build limits:** the battery mode only works in the Direct build, which does not use the App Sandbox. A sandboxed build cannot run `sudo`, so it stays on `caffeinate -s` and needs power.
 * **Risks:** a closed Mac that stays awake gets hot and drains its battery. Do not leave it in a bag or other enclosed space. The built-in display can stay lit under the lid.
 
+## Releasing
+
+GitHub Actions tests the app on every push to `main` and builds a disk image when the tests pass. Download it from the run's artifacts. A version tag publishes it as a release, with the notes of that version from `CHANGELOG.md`.
+
+1. While you work, add each user-visible change under `### Unreleased` in `CHANGELOG.md`.
+2. Run `make prepare-release VERSION=1.7.0`. It turns the unreleased notes into the notes of that version, adds a fresh `### Unreleased` section and sets the version number. It does not run git.
+3. Review the changes, commit them and push to `main`.
+4. Run `git tag v1.7.0 && git push origin v1.7.0`. The workflow checks that the tag matches the app version, then publishes the release.
+
+The image is signed ad hoc and not notarized, so macOS asks for confirmation the first time the app opens. A shareable release needs signing with an Apple Developer ID.
+
 ## Is this dangerous?
 
 This utility will not harm your Mac because it is based on an official command line tool by Apple. **BUT** there is no guarantee of any kind, so use this tool **AT YOUR OWN RISK**.
