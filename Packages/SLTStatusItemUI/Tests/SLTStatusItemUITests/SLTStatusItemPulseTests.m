@@ -195,7 +195,7 @@
     }
     else
     {
-        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.6], 4u, @"An active icon cycles through the pulse frames.");
+        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"An active icon cycles through the pulse frames.");
         XCTAssertNil([button.layer animationForKey:SLTStatusItemPulseAnimationKey], @"The body must not fade. Only the screen pulses.");
 
         // Turning the setting off must stop a pulse that is already running.
@@ -206,7 +206,7 @@
 
         NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDisabled = NO;
         [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.3]];
-        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.6], 4u, @"Turning it back on resumes the pulse.");
+        XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"Turning it back on resumes the pulse.");
     }
 
     controller.appearance = SLTStatusItemAppearanceInactive;
@@ -227,7 +227,7 @@
     if(button == nil || NSWorkspace.sharedWorkspace.accessibilityDisplayShouldReduceMotion) { XCTSkip(@"No menu bar, or Reduce Motion is on."); }
 
     controller.appearance = SLTStatusItemAppearanceActive;
-    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 1.0 / 16.0, 0.0001, @"The default is a one second cycle.");
+    XCTAssertEqualWithAccuracy(controller.pulseTimer.timeInterval, 2.0 / 16.0, 0.0001, @"The default is a two second cycle.");
 
     // A shorter pulse steps faster, and the running pulse picks the new speed up at once.
     NSUserDefaults.standardUserDefaults.slt_menuBarIconPulseDuration = 0.5;
@@ -263,7 +263,7 @@
     NSUserDefaults.standardUserDefaults.slt_menuBarIconColor = SLTMenuBarIconColorDark;
     [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.4]];
 
-    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:0.6], 4u, @"The pulse keeps running after the color changes.");
+    XCTAssertGreaterThanOrEqual([self distinctImagesShownBy:button over:1.0], 4u, @"The pulse keeps running after the color changes.");
     XCTAssertFalse([whiteFrames containsObject:button.image], @"The pulse now shows frames of the new color.");
 
     controller.appearance = SLTStatusItemAppearanceInactive;

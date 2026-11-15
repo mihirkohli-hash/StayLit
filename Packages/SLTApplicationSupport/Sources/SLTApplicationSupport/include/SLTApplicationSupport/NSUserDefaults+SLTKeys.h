@@ -65,7 +65,7 @@ typedef NS_ENUM(NSInteger, SLTMenuBarIconColor) {
 /// The length of one pulse cycle in seconds, from the dimmest screen to the brightest and back.
 ///
 /// The user defaults store whole milliseconds, so the Settings drop-down can bind to them.
-/// A missing, non-numeric or non-positive value returns the default of 1 second.
+/// A missing, non-numeric or non-positive value returns the default of 2 seconds.
 /// Any other value is limited to the range of the minimum and maximum duration.
 @property (nonatomic) NSTimeInterval slt_menuBarIconPulseDuration;
 

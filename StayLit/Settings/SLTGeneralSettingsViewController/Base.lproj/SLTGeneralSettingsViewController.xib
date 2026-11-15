@@ -132,14 +132,14 @@
                                 </textField>
                                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pp2-Pl-9mR">
                                     <rect key="frame" x="132" y="0.0" width="141" height="25"/>
-                                    <popUpButtonCell key="cell" type="push" title="1 second" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" tag="1000" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Ib2-Pl-2bD" id="Pc2-Pl-5wT">
+                                    <popUpButtonCell key="cell" type="push" title="2 seconds" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" tag="2000" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Ic2-Pl-3cE" id="Pc2-Pl-5wT">
                                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="menu"/>
                                         <menu key="menu" id="Mn2-Pl-6vB">
                                             <items>
                                                 <menuItem title="0.5 seconds" tag="500" id="Ia2-Pl-1aC"/>
-                                                <menuItem title="1 second" tag="1000" state="on" id="Ib2-Pl-2bD"/>
-                                                <menuItem title="2 seconds" tag="2000" id="Ic2-Pl-3cE"/>
+                                                <menuItem title="1 second" tag="1000" id="Ib2-Pl-2bD"/>
+                                                <menuItem title="2 seconds" tag="2000" state="on" id="Ic2-Pl-3cE"/>
                                                 <menuItem title="3 seconds" tag="3000" id="Id2-Pl-4dF"/>
                                                 <menuItem title="5 seconds" tag="5000" id="Ie2-Pl-5eG"/>
                                             </items>

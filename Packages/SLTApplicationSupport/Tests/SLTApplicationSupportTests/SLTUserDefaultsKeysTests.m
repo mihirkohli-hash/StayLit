@@ -130,10 +130,10 @@ SLT_GENERATE_BOOL_TEST(isLowPowerModeMonitoringEnabled,
     XCTAssertEqual(defaults.slt_menuBarIconColor, SLTMenuBarIconColorWhite);
 }
 
-- (void)testMenuBarIconPulseDurationDefaultsToOneSecond
+- (void)testMenuBarIconPulseDurationDefaultsToTwoSeconds
 {
-    XCTAssertEqual(self.defaults.slt_menuBarIconPulseDuration, 1.0);
-    XCTAssertEqual(SLTDefaultMenuBarIconPulseDuration, 1.0);
+    XCTAssertEqual(self.defaults.slt_menuBarIconPulseDuration, 2.0);
+    XCTAssertEqual(SLTDefaultMenuBarIconPulseDuration, 2.0);
 }
 
 - (void)testMenuBarIconPulseDurationRoundTripStoresMilliseconds
@@ -172,10 +172,10 @@ SLT_GENERATE_BOOL_TEST(isLowPowerModeMonitoringEnabled,
     for(id value in @[@0, @(-1), @(-5000), @"fast", @[@1], @{@"a": @1}, [NSData data]])
     {
         [defaults setObject:value forKey:key];
-        XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 1.0, @"%@ must fall back to 1 second", value);
+        XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 2.0, @"%@ must fall back to 2 seconds", value);
     }
     [defaults removeObjectForKey:key];
-    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 1.0);
+    XCTAssertEqual(defaults.slt_menuBarIconPulseDuration, 2.0);
 }
 
 - (void)testBatteryCapacityThreshold
