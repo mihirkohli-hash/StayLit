@@ -1,0 +1,66 @@
+name: Build DMG
+
+# Builds a disk image of the app whenever changes reach main, and publishes it for version tags.
+# The app is signed ad hoc, so this is a test and personal build, not a notarized release.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    # A change to text files only cannot change the app. Skipping it saves macOS runner minutes.
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'Documentation/**'
+      - 'LICENSE'
+      - 'NOTICE'
+  workflow_dispatch:
+
+# A newer push replaces a build that is still running for the same ref.
+concurrency:
+  group: dmg-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dmg:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # The project needs a recent Xcode for the icon format and the package manifests.
+      - name: Use the newest installed Xcode
+        run: |
+          XCODE=$(find /Applications -maxdepth 1 -name 'Xcode*.app' | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Build the disk image
+        run: make dmg
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: StayLit-dmg
+          path: dist/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: dmg
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: StayLit-dmg
+          path: dmg
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dmg/*.dmg --repo "$GITHUB_REPOSITORY" --title "StayLit $TAG" --generate-notes
