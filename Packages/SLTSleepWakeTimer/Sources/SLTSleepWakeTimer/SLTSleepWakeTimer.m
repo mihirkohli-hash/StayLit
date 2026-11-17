@@ -15,6 +15,7 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
 @property (nonatomic, readwrite) NSTimeInterval scheduledTimeInterval;
 @property (nonatomic) NSTask *caffeinateTask;
 @property (nonatomic) os_log_t log;
+@property (nonatomic) id terminationObserver;
 @end
 
 @implementation SLTSleepWakeTimer
@@ -27,10 +28,10 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
         // Terminate all remaining tasks on app quit
         AutoWeak weakSelf = self;
         Auto center = NSNotificationCenter.defaultCenter;
-        [center addObserverForName:NSApplicationWillTerminateNotification
-                            object:nil
-                             queue:nil
-                        usingBlock:^(NSNotification *note) {
+        self.terminationObserver = [center addObserverForName:NSApplicationWillTerminateNotification
+                                                       object:nil
+                                                        queue:nil
+                                                   usingBlock:^(NSNotification *note) {
             [weakSelf invalidate];
         }];
         
@@ -41,7 +42,12 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
 
 - (void)dealloc
 {
-    [self invalidate];
+    [NSNotificationCenter.defaultCenter removeObserver:self.terminationObserver];
+
+    // No callbacks here. A deallocating object cannot be referenced weakly, and nobody
+    // is left to receive them.
+    self.caffeinateTask.terminationHandler = nil;
+    [self.caffeinateTask terminate];
 }
 
 #pragma mark - Scheduling
@@ -49,7 +55,17 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
 - (void)scheduleWithTimeInterval:(NSTimeInterval)timeInterval completion:(SLTSleepWakeTimerCompletionBlock)completion
 {
     os_log(self.log, "%{public}@ will activate with time interval %{public}@.", self, @(timeInterval));
-    
+
+    // A second caffeinate would keep the Mac awake after the user turns StayLit off,
+    // because only the newest task is tracked. The old task ends without a deactivate callback.
+    Auto previousTask = self.caffeinateTask;
+    if(previousTask != nil)
+    {
+        previousTask.terminationHandler = nil;
+        [previousTask terminate];
+        self.caffeinateTask = nil;
+    }
+
     Auto delegate = self.delegate;
     if([self.delegate respondsToSelector:@selector(sleepWakeTimer:willActivateWithTimeInterval:)])
     {
@@ -129,23 +145,42 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
                                                               userDefaults:NSUserDefaults.standardUserDefaults
                                                          processIdentifier:NSProcessInfo.processInfo.processIdentifier];
 
+    Auto task = [NSTask new];
+    task.executableURL = [NSURL fileURLWithPath:@"/usr/bin/caffeinate"];
+    task.arguments = arguments;
+
+    // The handler is set before launch, so a short caffeinate that exits at once is not missed.
+    // It runs on a background queue, so the state change moves to the main queue. The task
+    // check ignores a task that a newer schedule call already replaced.
+    AutoWeak weakSelf = self;
+    task.terminationHandler = ^(NSTask *finishedTask) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            Auto strongSelf = weakSelf;
+            if(strongSelf.caffeinateTask == finishedTask)
+            {
+                [strongSelf terminateWithForce:NO];
+            }
+        });
+    };
+
     [self willChangeValueForKey:@"scheduled"];
-    self.caffeinateTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/caffeinate"
-                                                   arguments:arguments];
+    NSError *launchError = nil;
+    if(![task launchAndReturnError:&launchError])
+    {
+        os_log_error(self.log, "caffeinate could not start: %{public}@", launchError);
+        [self didChangeValueForKey:@"scheduled"];
+        [self terminateWithForce:YES];
+        return;
+    }
+    self.caffeinateTask = task;
 
     // On battery, caffeinate cannot keep a closed lid awake. The guard can, but only
     // when the user gave the one-time permission. Without it, the session still runs.
     if([NSUserDefaults.standardUserDefaults slt_isKeepAwakeOnLidCloseEnabled])
     {
         [SLTClosedLidSleepGuard beginSessionWithWatchedProcessIdentifier:NSProcessInfo.processInfo.processIdentifier
-                                             caffeinateProcessIdentifier:self.caffeinateTask.processIdentifier];
+                                             caffeinateProcessIdentifier:task.processIdentifier];
     }
-
-    // Termination Handler
-    AutoWeak weakSelf = self;
-    self.caffeinateTask.terminationHandler = ^(NSTask *task) {
-        [weakSelf terminateWithForce:NO];
-    };
     [self didChangeValueForKey:@"scheduled"];
 }
 
@@ -165,19 +200,20 @@ NSTimeInterval const SLTSleepWakeTimeIntervalIndefinite = 0;
     self.fireDate = nil;
     [self didChangeValueForKey:@"scheduled"];
 
-    if(self.completionBlock)
-    {
-        AutoWeak weakSelf = self;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            weakSelf.completionBlock(forcedTermination);
-        });
-    }
-    
+    // The block must not retain self, or the timer would live until the block runs.
+    Auto completion = self.completionBlock;
+    Auto delegate = self.delegate;
+    AutoWeak weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        Auto delegate = self.delegate;
-        if([delegate respondsToSelector:@selector(sleepWakeTimerDidDeactivate:)])
+        if(completion)
         {
-            [delegate sleepWakeTimerDidDeactivate:self];
+            completion(forcedTermination);
+        }
+
+        Auto strongSelf = weakSelf;
+        if(strongSelf != nil && [delegate respondsToSelector:@selector(sleepWakeTimerDidDeactivate:)])
+        {
+            [delegate sleepWakeTimerDidDeactivate:strongSelf];
         }
     });
     

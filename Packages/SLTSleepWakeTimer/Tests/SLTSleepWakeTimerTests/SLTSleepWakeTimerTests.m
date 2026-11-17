@@ -26,9 +26,7 @@
     self.defaults = [[NSUserDefaults alloc] initWithSuiteName:suiteName];
 }
 
-// The app keeps its one timer alive for its whole lifetime. Releasing a timer
-// queues a main-queue callback that uses the freed object, so tests must not
-// release the timers they start.
+// The app keeps its one timer alive for its whole lifetime, and the tests mirror that.
 - (SLTSleepWakeTimer *)newRetainedTimer
 {
     static NSMutableArray<SLTSleepWakeTimer *> *retainedTimers;
@@ -178,6 +176,66 @@
 
     if(previousValue) { [standardDefaults setObject:previousValue forKey:SLTUserDefaultsKeyKeepAwakeOnLidCloseEnabled]; }
     else { [standardDefaults removeObjectForKey:SLTUserDefaultsKeyKeepAwakeOnLidCloseEnabled]; }
+}
+
+#pragma mark - Restart and release
+
+// Only the newest task is tracked, so an earlier one that kept running would keep the
+// Mac awake after the user turns StayLit off.
+- (void)testSchedulingAgainEndsTheEarlierProcess
+{
+    Auto timer = [self newRetainedTimer];
+    [timer scheduleWithTimeInterval:SLTSleepWakeTimeIntervalIndefinite completion:nil];
+    NSTask *first = [timer valueForKey:@"caffeinateTask"];
+    XCTAssertTrue(first.isRunning);
+
+    [timer scheduleWithTimeInterval:SLTSleepWakeTimeIntervalIndefinite completion:nil];
+    NSTask *second = [timer valueForKey:@"caffeinateTask"];
+    XCTAssertNotEqual(first, second);
+    XCTAssertTrue(second.isRunning);
+
+    // terminate is asynchronous, so wait for the first process to exit.
+    Auto deadline = [NSDate dateWithTimeIntervalSinceNow:5];
+    while(first.isRunning && deadline.timeIntervalSinceNow > 0)
+    {
+        [NSThread sleepForTimeInterval:0.05];
+    }
+    XCTAssertFalse(first.isRunning);
+
+    [timer invalidate];
+}
+
+// The earlier process ends without a deactivate callback, so the first completion block
+// must not fire when the timer restarts.
+- (void)testSchedulingAgainDoesNotReportTheEarlierProcessAsFinished
+{
+    Auto timer = [self newRetainedTimer];
+    Auto reported = [self expectationWithDescription:@"first completion"];
+    reported.inverted = YES;
+    [timer scheduleWithTimeInterval:SLTSleepWakeTimeIntervalIndefinite completion:^(BOOL cancelled) {
+        [reported fulfill];
+    }];
+    [timer scheduleWithTimeInterval:SLTSleepWakeTimeIntervalIndefinite completion:nil];
+
+    [self waitForExpectations:@[reported] timeout:1.5];
+    XCTAssertTrue(timer.isScheduled);
+
+    [timer invalidate];
+}
+
+// Releasing a timer that runs a process must not crash. The deactivate callback that
+// dealloc queues runs on the main queue after the timer is gone.
+- (void)testReleasingARunningTimerDoesNotCrash
+{
+    @autoreleasepool
+    {
+        Auto timer = [SLTSleepWakeTimer new];
+        [timer scheduleWithTimeInterval:SLTSleepWakeTimeIntervalIndefinite completion:nil];
+    }
+
+    Auto drained = [self expectationWithDescription:@"main queue drained"];
+    dispatch_async(dispatch_get_main_queue(), ^{ [drained fulfill]; });
+    [self waitForExpectationsWithTimeout:5 handler:nil];
 }
 
 @end
