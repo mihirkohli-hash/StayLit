@@ -124,9 +124,10 @@ test-ci: resolve-packages
 LOCAL_APP = $(BUILD_DIR)/Build/Products/Release/$(NAME).app
 DMG = $(OUTPUT_DIR)/$(NAME)-$(VERSION).dmg
 
-# Builds the Direct app and signs it ad hoc for use outside the App Store. An ad-hoc signed Release
-# build has no Team ID, and macOS then refuses to load the embedded Sparkle framework, which has its own.
-# The local entitlements turn off library validation to allow that. This is not a release signature.
+# Builds the Direct app and signs it ad hoc for use outside the App Store. Ad-hoc code has no Team ID,
+# and the hardened runtime refuses to load the embedded Sparkle framework without one. So the ad-hoc
+# build skips the hardened runtime and does not carry the library validation exception that would only
+# weaken it. A Developer ID release signs with the hardened runtime. This is not that release signature.
 build-local-app: resolve-packages
 	$(XCODEBUILD) build \
 	-quiet \
@@ -138,7 +139,7 @@ build-local-app: resolve-packages
 	CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGNING_REQUIRED=YES \
 	$(DISABLE_PACKAGE_RESOLUTION) \
 	$(SAVE_LOG)
-	codesign --force --sign - --options runtime --entitlements "$(LOCAL_INSTALL_ENTITLEMENTS)" "$(LOCAL_APP)"
+	codesign --force --deep --sign - --entitlements "$(LOCAL_INSTALL_ENTITLEMENTS)" "$(LOCAL_APP)"
 	codesign --verify --deep --strict "$(LOCAL_APP)"
 .PHONY: build-local-app
 
