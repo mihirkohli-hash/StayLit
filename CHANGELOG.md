@@ -4,6 +4,17 @@
 
 ### Unreleased
 
+### v1.7.1 (2026-11-17)
+
+- fixed a second activation leaving the earlier `caffeinate` process running after StayLit was turned off
+- fixed the timer state changing off the main thread, and a crash when a running timer was released
+- fixed the `activate` URL and Shortcuts action leaving the icon inactive while the Mac was kept awake, and made it reject negative or non-numeric durations
+- fixed switching back to a user session starting an indefinite session that nobody asked for
+- fixed external display detection, which read uninitialized values and ended the session in clamshell mode with an external main display
+- fixed the launch at login setting not reporting its change
+- the battery-mode permission is now one file per user, `/etc/sudoers.d/staylit-<user name>`, so a second user no longer replaces the first user's rule
+- the ad-hoc signed app no longer carries the library validation exception
+
 ### v1.7.0 (2026-11-15)
 
 - added a "Stay awake when the lid is closed" advanced setting. On power it uses `caffeinate -s`. On battery it turns on `pmset disablesleep` after a one-time administrator permission, and a watchdog turns it off again when the session ends or the app crashes. Battery mode needs the non-sandboxed Direct build
