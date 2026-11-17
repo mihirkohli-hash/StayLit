@@ -46,6 +46,9 @@
             SLTUserDefaultsKeyMenuBarIconPulseDurationMilliseconds: @((NSInteger)(SLTDefaultMenuBarIconPulseDuration * 1000))
         }];
 
+        // Zero means an indefinite timer, so "nothing to restore" needs a negative value.
+        self.workspaceScheduledTimeInterval = -1;
+
         [self configureStatusItemController];
         [self configureSleepWakeTimer];
         [self configureEventHandler];
@@ -348,8 +351,12 @@
     Auto defaults = NSUserDefaults.standardUserDefaults;
     if([defaults slt_isDeactivateOnUserSwitchEnabled] && self.workspaceScheduledTimeInterval >= 0)
     {
-        [self activateTimerWithTimeInterval:self.workspaceScheduledTimeInterval];
+        Auto interval = self.workspaceScheduledTimeInterval;
         self.workspaceScheduledTimeInterval = -1;
+        if(![self.sleepWakeTimer isScheduled])
+        {
+            [self activateTimerWithTimeInterval:interval];
+        }
     }
 }
 
@@ -398,35 +405,40 @@
     NSString *minutes = parameters[@"minutes"];
     NSString *hours = parameters[@"hours"];
 
-    [self terminateTimer];
-    
-    Auto statusItemController = self.statusItemController;
-
     // Activate indefinitely if there are no parameters
-    if(parameters == nil || parameters.count == 0)
+    NSTimeInterval interval = SLTSleepWakeTimeIntervalIndefinite;
+    if(seconds != nil)
     {
-        [self activateTimer];
-        statusItemController.appearance = SLTStatusItemAppearanceActive;
-    }
-    else if(seconds != nil)
-    {
-        [self activateTimerWithTimeInterval:(NSTimeInterval)ceil(seconds.doubleValue)];
-        statusItemController.appearance = SLTStatusItemAppearanceActive;
+        interval = (NSTimeInterval)ceil(seconds.doubleValue);
     }
     else if(minutes != nil)
     {
-        [self activateTimerWithTimeInterval:(NSTimeInterval)SLT_MINUTES(ceil(minutes.doubleValue))];
-        statusItemController.appearance = SLTStatusItemAppearanceActive;
+        interval = (NSTimeInterval)SLT_MINUTES(ceil(minutes.doubleValue));
     }
     else if(hours != nil)
     {
-        [self activateTimerWithTimeInterval:(NSTimeInterval)SLT_HOURS(ceil(hours.doubleValue))];
-        statusItemController.appearance = SLTStatusItemAppearanceActive;
+        interval = (NSTimeInterval)SLT_HOURS(ceil(hours.doubleValue));
     }
-    else
+    else if(parameters != nil && parameters.count > 0)
     {
-        statusItemController.appearance = SLTStatusItemAppearanceInactive;
+        // Only unknown parameters. The request makes no sense, so it only stops the timer.
+        interval = -1;
     }
+
+    [self terminateTimer];
+
+    // A negative or non-numeric duration is rejected. The icon then stays inactive.
+    if(!isfinite(interval) || interval < 0)
+    {
+        return;
+    }
+
+    // terminateTimer reports the deactivation on the next main queue turn. Activating
+    // right away would let that late report switch the new session's icon back to inactive.
+    AutoWeak weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [weakSelf activateTimerWithTimeInterval:interval];
+    });
 }
 
 #pragma mark - Internal / External Screen Parameter Changes

@@ -33,11 +33,11 @@
     
     if(@available(macOS 13.0, *))
     {
-        return SLTLaunchAtLoginAppServiceSetEnabled(launchAtLoginEnabled);
+        SLTLaunchAtLoginAppServiceSetEnabled(launchAtLoginEnabled);
     }
     else
     {
-        return SLTLaunchAtLoginLoginItemSetEnabled(launchAtLoginEnabled);
+        SLTLaunchAtLoginLoginItemSetEnabled(launchAtLoginEnabled);
     }
     
     [self didChangeValueForKey:@"slt_launchAtLoginEnabled"];
@@ -114,13 +114,13 @@ NS_INLINE BOOL SLTLaunchAtLoginUserDefaultIsEnabled()
     return [defaults boolForKey:SLTLauncherStateUserDefaultsKey];
 }
 
-NS_INLINE BOOL SLTLaunchAtLoginUserDefaultSetEnabled(BOOL enabled)
+NS_INLINE void SLTLaunchAtLoginUserDefaultSetEnabled(BOOL enabled)
 {
     Auto defaults = NSUserDefaults.standardUserDefaults;
     [defaults setBool:enabled forKey:SLTLauncherStateUserDefaultsKey];
 }
 
-NS_INLINE BOOL SLTLaunchAtLoginUserDefaultReset()
+NS_INLINE void SLTLaunchAtLoginUserDefaultReset()
 {
     Auto defaults = NSUserDefaults.standardUserDefaults;
     [defaults removeObjectForKey:SLTLauncherStateUserDefaultsKey];
