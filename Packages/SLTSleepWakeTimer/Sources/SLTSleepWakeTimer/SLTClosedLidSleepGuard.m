@@ -12,7 +12,7 @@
 
 static NSString * const SLTPmsetPath = @"/usr/bin/pmset";
 static NSString * const SLTSudoPath = @"/usr/bin/sudo";
-static NSString * const SLTSudoersFilePath = @"/etc/sudoers.d/staylit";
+static NSString * const SLTSudoersDirectory = @"/etc/sudoers.d";
 
 // Each element is one argument, so `sudo` matches the rule argument by argument.
 static NSArray<NSString *> *SLTPmsetSleepDisabledArguments(BOOL disabled)
@@ -81,6 +81,14 @@ static NSArray<NSString *> *SLTSudoArgumentsForSleepDisabled(BOOL disabled)
 
 #pragma mark - Authorization
 
++ (NSString *)sudoersFilePathForUserName:(NSString *)userName
+{
+    // Each user gets their own file. A shared file would let the next user to accept the
+    // prompt replace the rule of everyone before them. sudo skips files with a dot in the name.
+    Auto safeName = [userName stringByReplacingOccurrencesOfString:@"." withString:@"_"];
+    return [SLTSudoersDirectory stringByAppendingPathComponent:[@"staylit-" stringByAppendingString:safeName]];
+}
+
 + (NSString *)sudoersRuleForUserName:(NSString *)userName
 {
     // A sudoers rule is plain text. Only these characters are safe in a user name.
@@ -115,7 +123,7 @@ static NSArray<NSString *> *SLTSudoArgumentsForSleepDisabled(BOOL disabled)
         @"/usr/sbin/visudo -cf \"$t\" > /dev/null; "
         @"/usr/sbin/chown root:wheel \"$t\"; "
         @"/bin/chmod 0440 \"$t\"; "
-        @"/bin/mv \"$t\" %@", rule, SLTSudoersFilePath];
+        @"/bin/mv \"$t\" %@", rule, [self sudoersFilePathForUserName:NSUserName()]];
     Auto escaped = [[script stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"]
                     stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
     Auto source = [NSString stringWithFormat:

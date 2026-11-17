@@ -42,6 +42,14 @@
     XCTAssertEqualObjects([SLTClosedLidSleepGuard sudoersRuleForUserName:@"jane.doe"], expected);
 }
 
+// sudo ignores files in /etc/sudoers.d whose name has a dot, so a user name with a dot
+// must not end up in the file name as is.
+- (void)testSudoersFilePathIsPerUserAndHasNoDot
+{
+    XCTAssertEqualObjects([SLTClosedLidSleepGuard sudoersFilePathForUserName:@"jane.doe"], @"/etc/sudoers.d/staylit-jane_doe");
+    XCTAssertEqualObjects([SLTClosedLidSleepGuard sudoersFilePathForUserName:@"bob"], @"/etc/sudoers.d/staylit-bob");
+}
+
 - (void)testSudoersRuleAcceptsCommonUserNameCharacters
 {
     XCTAssertNotNil([SLTClosedLidSleepGuard sudoersRuleForUserName:@"Jane_Doe-2"]);

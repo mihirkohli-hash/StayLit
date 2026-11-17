@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// that could change the meaning of the rule.
 + (nullable NSString *)sudoersRuleForUserName:(NSString *)userName;
 
+/// Returns the file that holds the `sudoers` rule of one user.
++ (NSString *)sudoersFilePathForUserName:(NSString *)userName;
+
 /// Starts the watchdog without turning anything on.
 ///
 /// The watchdog waits until either process exits. Then it runs the reset
